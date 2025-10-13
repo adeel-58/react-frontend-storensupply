@@ -1,20 +1,27 @@
+// src/components/Header.jsx
 import { useState } from "react";
-import { AppBar, Box, Toolbar, Typography, Button, Menu, MenuItem, IconButton } from "@mui/material";
+import {
+  AppBar,
+  Box,
+  Toolbar,
+  Typography,
+  Button,
+  Menu,
+  MenuItem,
+  IconButton,
+  LinearProgress,
+} from "@mui/material";
 import { Link } from "react-router-dom";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
 
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const handleMenu = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -29,8 +36,10 @@ export default function Header() {
             My E-Commerce App
           </Typography>
 
-          {/* If NOT logged in */}
-          {!user ? (
+          {/* ✅ Loading placeholder while verifying token */}
+          {loading ? (
+            <Typography sx={{ mr: 2, opacity: 0.7 }}>Loading...</Typography>
+          ) : !user ? (
             <>
               <Button color="inherit" component={Link} to="/login">
                 Login
@@ -42,25 +51,16 @@ export default function Header() {
           ) : (
             <>
               <Typography sx={{ mr: 1 }}>Hi, {user.username}</Typography>
-              <IconButton
-                size="large"
-                color="inherit"
-                onClick={handleMenu}
-              >
+              <IconButton size="large" color="inherit" onClick={handleMenu}>
                 <AccountCircle />
               </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-              >
-                <MenuItem disabled>
-                  Credits: {user.sellerProfile?.credits ?? "N/A"}
-                </MenuItem>
-                <MenuItem component={Link} to="/dashboard" onClick={handleClose}>
-                  Dashboard
-                </MenuItem>
-                <MenuItem component={Link} to="/profile" onClick={handleClose}>
+              <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+                {user.sellerProfile && (
+                  <MenuItem disabled>
+                    Credits: {user.sellerProfile.credits ?? 0}
+                  </MenuItem>
+                )}
+                <MenuItem component={Link} to="/seller" onClick={handleClose}>
                   Profile
                 </MenuItem>
                 <MenuItem
@@ -75,6 +75,9 @@ export default function Header() {
             </>
           )}
         </Toolbar>
+
+        {/* ✅ Optional thin progress bar while verifying */}
+        {loading && <LinearProgress color="secondary" />}
       </AppBar>
     </Box>
   );

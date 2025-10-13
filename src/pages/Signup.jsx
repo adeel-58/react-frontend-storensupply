@@ -1,3 +1,4 @@
+// src/pages/Signup.jsx
 import { useState } from "react";
 import axios from "axios";
 import {
@@ -33,7 +34,7 @@ export default function Signup() {
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}/auth/signup`, form);
-      signup(res.data); // ✅ Automatically shows toast + redirects (via AuthContext)
+      signup(res.data);
     } catch (err) {
       console.error(err);
       showNotification(

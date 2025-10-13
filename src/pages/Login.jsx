@@ -1,3 +1,4 @@
+// src/pages/Login.jsx
 import { useState } from "react";
 import axios from "axios";
 import { Box, TextField, Button, Typography, Paper } from "@mui/material";
@@ -20,7 +21,7 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await axios.post(`${API_URL}/auth/login`, form);
-      login(res.data); // ✅ Automatically shows toast + redirects (via AuthContext)
+      login(res.data);
     } catch (err) {
       console.error(err);
       showNotification(

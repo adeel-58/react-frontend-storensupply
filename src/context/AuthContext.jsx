@@ -1,3 +1,4 @@
+// src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const { showNotification } = useNotification();
 
-  // Verify token on app load
+  // ✅ Verify token on app load
   useEffect(() => {
     const verifyToken = async () => {
       const token = localStorage.getItem("token");
@@ -20,35 +21,61 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
+
       try {
         const res = await axios.get(`${API_URL}/auth/verify`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUser(res.data.user);
-      } catch {
+
+        // Merge user and profile data
+        const combinedUser = {
+          ...res.data.user,
+          sellerProfile: res.data.sellerProfile || null,
+          supplierProfile: res.data.supplierProfile || null,
+        };
+
+        setUser(combinedUser);
+      } catch (error) {
+        console.error("Token verification failed:", error);
         localStorage.removeItem("token");
         setUser(null);
       } finally {
-        setLoading(false);
+        setLoading(false); // ✅ ensure this runs always
       }
     };
+
     verifyToken();
   }, []);
 
+  // ✅ Unified login
   const login = (data) => {
+    const combinedUser = {
+      ...data.user,
+      sellerProfile: data.sellerProfile || null,
+      supplierProfile: data.supplierProfile || null,
+    };
+
     localStorage.setItem("token", data.token);
-    setUser(data.user);
+    setUser(combinedUser);
     showNotification("Login successful! Welcome back 👋", "success");
     navigate("/");
   };
 
+  // ✅ Unified signup
   const signup = (data) => {
+    const combinedUser = {
+      ...data.user,
+      sellerProfile: data.sellerProfile || null,
+      supplierProfile: data.supplierProfile || null,
+    };
+
     localStorage.setItem("token", data.token);
-    setUser(data.user);
+    setUser(combinedUser);
     showNotification("Signup successful! Welcome aboard 🎉", "success");
     navigate("/");
   };
 
+  // ✅ Logout
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
