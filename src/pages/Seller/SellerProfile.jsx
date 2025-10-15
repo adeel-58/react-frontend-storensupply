@@ -10,22 +10,30 @@ import {
   Grid,
   Snackbar,
   Alert,
+  CircularProgress,
+  Backdrop,
 } from "@mui/material";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SellerProfile() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+
   const [location, setLocation] = useState(user?.sellerProfile?.location || "");
   const [whatsapp, setWhatsapp] = useState(user?.whatsapp_number || "");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [snackbar, setSnackbar] = useState({ open: false, message: "", type: "success" });
+  const [loading, setLoading] = useState(false); // ✅ for loader overlay
 
   const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
+  // ✅ Common loading handler
+  const showLoader = (state) => setLoading(state);
+
   // ✅ Update Location
   const handleLocationUpdate = async () => {
+    showLoader(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/seller/update-location`, {
         method: "PUT",
@@ -38,11 +46,23 @@ export default function SellerProfile() {
       const data = await res.json();
       if (data.success) {
         setSnackbar({ open: true, message: "Location updated successfully", type: "success" });
+
+        const updatedUser = {
+          ...user,
+          sellerProfile: { ...user.sellerProfile, location },
+        };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        // ✅ Clear field after success
+        setLocation("");
       } else {
         throw new Error(data.message);
       }
     } catch (err) {
       setSnackbar({ open: true, message: err.message, type: "error" });
+    } finally {
+      showLoader(false);
     }
   };
 
@@ -53,6 +73,7 @@ export default function SellerProfile() {
       return;
     }
 
+    showLoader(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/seller/update-whatsapp`, {
         method: "PUT",
@@ -65,11 +86,20 @@ export default function SellerProfile() {
       const data = await res.json();
       if (data.success) {
         setSnackbar({ open: true, message: "WhatsApp number updated successfully", type: "success" });
+
+        const updatedUser = { ...user, whatsapp_number: whatsapp };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        // ✅ Clear field after success
+        setWhatsapp("");
       } else {
         throw new Error(data.message);
       }
     } catch (err) {
       setSnackbar({ open: true, message: err.message, type: "error" });
+    } finally {
+      showLoader(false);
     }
   };
 
@@ -79,6 +109,8 @@ export default function SellerProfile() {
       setSnackbar({ open: true, message: "Passwords do not match", type: "error" });
       return;
     }
+
+    showLoader(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/seller/change-password`, {
         method: "PUT",
@@ -99,6 +131,8 @@ export default function SellerProfile() {
       }
     } catch (err) {
       setSnackbar({ open: true, message: err.message, type: "error" });
+    } finally {
+      showLoader(false);
     }
   };
 
@@ -156,6 +190,7 @@ export default function SellerProfile() {
                 variant="contained"
                 sx={{ mt: 1 }}
                 onClick={handleWhatsappUpdate}
+                disabled={loading}
               >
                 Update WhatsApp
               </Button>
@@ -177,6 +212,7 @@ export default function SellerProfile() {
                 variant="contained"
                 sx={{ mt: 1 }}
                 onClick={handleLocationUpdate}
+                disabled={loading}
               >
                 Update Location
               </Button>
@@ -218,6 +254,7 @@ export default function SellerProfile() {
                 color="secondary"
                 sx={{ mt: 1 }}
                 onClick={handlePasswordChange}
+                disabled={loading}
               >
                 Change Password
               </Button>
@@ -226,6 +263,7 @@ export default function SellerProfile() {
         </CardContent>
       </Card>
 
+      {/* ✅ Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -236,6 +274,19 @@ export default function SellerProfile() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* ✅ Centered Loader Overlay */}
+      <Backdrop
+        open={loading}
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          flexDirection: "column",
+        }}
+      >
+        <CircularProgress color="inherit" />
+        <Typography sx={{ mt: 2 }}>Searching...</Typography>
+      </Backdrop>
     </Box>
   );
 }

@@ -1,4 +1,5 @@
 // src/components/Header.jsx
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   AppBar,
@@ -19,6 +20,7 @@ export default function Header() {
   const { user, logout, loading } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const navigate = useNavigate(); // ✅ Ensure this exists
 
   const handleMenu = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -36,7 +38,18 @@ export default function Header() {
             My E-Commerce App
           </Typography>
 
-          {/* ✅ Loading placeholder while verifying token */}
+          {/* ✅ New Button */}
+          {user && (
+            <Button
+              color="inherit"
+              sx={{ mr: 2 }}
+              onClick={() => navigate("/supplier-profile")}
+            >
+              Switch to Supplier
+            </Button>
+          )}
+
+          {/* ✅ Auth section */}
           {loading ? (
             <Typography sx={{ mr: 2, opacity: 0.7 }}>Loading...</Typography>
           ) : !user ? (
@@ -76,7 +89,6 @@ export default function Header() {
           )}
         </Toolbar>
 
-        {/* ✅ Optional thin progress bar while verifying */}
         {loading && <LinearProgress color="secondary" />}
       </AppBar>
     </Box>

@@ -1,16 +1,27 @@
-// src/pages/Login.jsx
+// src/pages/Signup.jsx
 import { useState } from "react";
 import axios from "axios";
-import { Box, TextField, Button, Typography, Paper } from "@mui/material";
-import { useAuth } from "../context/AuthContext";
-import { useNotification } from "../context/NotificationContext";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+} from "@mui/material";
+import { useAuth } from "../../context/AuthContext";
+import { useNotification } from "../../context/NotificationContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function Login() {
-  const [form, setForm] = useState({ email: "", password: "" });
+export default function Signup() {
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    whatsapp_number: "",
+  });
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const { showNotification } = useNotification();
 
   const handleChange = (e) =>
@@ -20,12 +31,16 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, form);
-      login(res.data);
+      // ✅ Always send role = "both"
+      const res = await axios.post(`${API_URL}/auth/signup`, {
+        ...form,
+        role: "both",
+      });
+      signup(res.data);
     } catch (err) {
       console.error(err);
       showNotification(
-        err.response?.data?.message || "Login failed. Please try again.",
+        err.response?.data?.message || "Signup failed. Please try again.",
         "error"
       );
     } finally {
@@ -36,12 +51,22 @@ export default function Login() {
   return (
     <Paper sx={{ maxWidth: 400, mx: "auto", p: 4, mt: 6 }}>
       <Typography variant="h5" textAlign="center" gutterBottom>
-        Login
+        Signup
       </Typography>
       <Box component="form" onSubmit={handleSubmit}>
         <TextField
           fullWidth
+          label="Username"
+          name="username"
+          value={form.username}
+          onChange={handleChange}
+          margin="normal"
+          required
+        />
+        <TextField
+          fullWidth
           label="Email"
+          type="email"
           name="email"
           value={form.email}
           onChange={handleChange}
@@ -58,6 +83,14 @@ export default function Login() {
           margin="normal"
           required
         />
+        <TextField
+          fullWidth
+          label="WhatsApp Number"
+          name="whatsapp_number"
+          value={form.whatsapp_number}
+          onChange={handleChange}
+          margin="normal"
+        />
         <Button
           fullWidth
           type="submit"
@@ -65,7 +98,7 @@ export default function Login() {
           sx={{ mt: 2 }}
           disabled={loading}
         >
-          {loading ? "Logging in..." : "Login"}
+          {loading ? "Signing up..." : "Signup"}
         </Button>
       </Box>
     </Paper>
