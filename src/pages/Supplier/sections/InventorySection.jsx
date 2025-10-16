@@ -65,22 +65,40 @@ export default function InventorySection() {
   const otherImagesInputRef = useRef(null);
 
   // Fetch products
-  const fetchProducts = async (status = "") => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_URL}/product${status ? `?status=${status}` : ""}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setProducts(res.data.products || []);
-    } catch (err) {
-      console.error("❌ Failed to fetch products:", err.response?.data || err);
-      setError("Failed to fetch products");
-    } finally {
-      setLoading(false);
+const fetchProducts = async (status = "") => {
+  setLoading(true);
+  setError(null);
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get(`${API_URL}/product${status ? `?status=${status}` : ""}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    let serverProducts = res.data.products || [];
+
+    // 🧹 Normalize backend inconsistency
+    serverProducts = serverProducts.map((p) => ({
+      ...p,
+      status: p.status === "paused" ? "out_of_stock" : p.status,
+    }));
+
+    // 🧠 Extra safety: if user filtered "out_of_stock" (paused tab)
+    // remove any accidentally active products that backend returned
+    if (status === "out_of_stock") {
+      serverProducts = serverProducts.filter(
+        (p) => p.status && p.status.toLowerCase() === "out_of_stock"
+      );
     }
-  };
+
+    setProducts(serverProducts);
+  } catch (err) {
+    console.error("❌ Failed to fetch products:", err.response?.data || err);
+    setError("Failed to fetch products");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchProducts();
@@ -165,27 +183,35 @@ export default function InventorySection() {
   };
 
   // Toggle product status
-  const toggleStatus = async (product) => {
-    const newStatus = product.status === "active" ? "out_of_stock" : "active";
-    try {
-      const token = localStorage.getItem("token");
-      await axios.patch(
-        `${API_URL}/product/${product.id}/status`,
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchProducts(statusFilter === "all" ? "" : statusFilter);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to update product status");
-    }
-  };
+const toggleStatus = async (product) => {
+  // "paused" concept on frontend maps to "out_of_stock" in DB
+  const newStatus = product.status === "active" ? "paused" : "active";
+
+  try {
+    const token = localStorage.getItem("token");
+    await axios.patch(
+      `${API_URL}/product/${product.id}/status`,
+      { status: newStatus },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // Refresh list
+    const fetchStatus = statusFilter === "paused" ? "out_of_stock" : statusFilter === "all" ? "" : statusFilter;
+    fetchProducts(fetchStatus);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update product status");
+  }
+};
+
 
   // Filter products
   const handleFilterChange = (status) => {
-    setStatusFilter(status);
-    fetchProducts(status === "all" ? "" : status);
-  };
+  setStatusFilter(status);
+  // Map frontend "paused" to backend "out_of_stock"
+  const backendStatus = status === "paused" ? "out_of_stock" : status === "all" ? "" : status;
+  fetchProducts(backendStatus);
+};
 
   if (loading) return <CircularProgress sx={{ mt: 5 }} />;
 
@@ -252,7 +278,8 @@ export default function InventorySection() {
                   <TableCell>{p.title}</TableCell>
                   <TableCell>${p.supplier_sold_price || "-"}</TableCell>
                   <TableCell>{p.stock_quantity ?? "-"}</TableCell>
-                  <TableCell>{p.status}</TableCell>
+                  <TableCell>{p.status === "out_of_stock" ? "Paused" : p.status}</TableCell>
+
                   <TableCell>
                     <IconButton onClick={() => { setSelectedProduct(p); setOpenPreviewDialog(true); }}>
                       <VisibilityIcon />
@@ -339,3 +366,5 @@ export default function InventorySection() {
     </Box>
   );
 }
+
+
