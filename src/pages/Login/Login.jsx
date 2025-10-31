@@ -5,6 +5,8 @@ import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
 
+import { Link } from "react-router-dom";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Login() {
@@ -58,6 +60,12 @@ export default function Login() {
           margin="normal"
           required
         />
+        <Typography textAlign="center" sx={{ mt: 2 }}>
+          Don't have an account?{" "}
+          <Link to="/signup" style={{ textDecoration: "none", color: "#1976d2" }}>
+            Signup
+          </Link>
+        </Typography>
         <Button
           fullWidth
           type="submit"
