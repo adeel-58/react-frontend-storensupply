@@ -128,7 +128,7 @@ const Plans = () => {
   sx={{ mr: 2, fontSize: "17px", fontWeight: 600 }}
   onClick={() => {
     if (plan.type === "paid") {
-      const phoneNumber = "+923467837274";
+      const phoneNumber = "+923338051097";
       const message = encodeURIComponent(`I want to purchase the ${plan.name} plan`);
       window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
     }

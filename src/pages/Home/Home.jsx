@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Typography, Button, Card, CardContent, CardMedia } from "@mui/material";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion"; // ✅ Added for animation
-import heroImage from "../../assets/heroimage.jpg";
+import heroImage from "/heroimage.jpg";
 import { useNavigate } from "react-router-dom";
 export default function Home() {
   const navigate = useNavigate();

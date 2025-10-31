@@ -1,5 +1,7 @@
 // src/components/AuthModal.jsx
 import React, { useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+
 import axios from "axios";
 import {
   Box,
@@ -27,7 +29,7 @@ const Card = styled("div")(({ theme }) => ({
   maxWidth: "94%",
   boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
   border: "1px solid #e6e6e6",
-  borderRadius: 2,         // slight radius for a modern look (keeps overall visual)
+  borderRadius: 2,
   color: "#000",
 }));
 
@@ -53,12 +55,10 @@ const textFieldSX = {
       fontSize: "14px",
     },
   },
-
   "& .MuiInputLabel-root": {
     fontSize: "14px",
     color: "#666",
   },
-
   "& .MuiFormHelperText-root": {
     fontSize: "13px",
   },
@@ -67,14 +67,16 @@ const textFieldSX = {
 export default function AuthModal({ open }) {
   const { login, signup } = useAuth();
   const { showNotification } = useNotification();
+  const location = useLocation();
+  if (location.pathname === "/reset-password") return null;
 
-  const [mode, setMode] = useState("login"); // 'login' | 'signup'
+  const [mode, setMode] = useState("login"); // 'login' | 'signup' | 'forgot'
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [signupForm, setSignupForm] = useState({
     username: "",
     email: "",
     password: "",
-    whatsapp_number: "+92", // default value shown in input
+    whatsapp_number: "+92",
     _phoneDialCode: "92",
   });
 
@@ -85,7 +87,6 @@ export default function AuthModal({ open }) {
   const handleChange = (setter) => (e) =>
     setter((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  // Validation functions
   const validators = {
     username: (val) => {
       if (!val || val.trim() === "") return "Username is required.";
@@ -106,9 +107,9 @@ export default function AuthModal({ open }) {
       return "";
     },
     whatsapp_number: (val, dialCode = "92") => {
-      if (!val || val.trim() === "" || val === `+${dialCode}`) return "WhatsApp number is required.";
+      if (!val || val.trim() === "" || val === `+${dialCode}`)
+        return "WhatsApp number is required.";
       const digits = val.replace(/\D/g, "");
-      // dialCode digits + 10 national digits (minimum)
       const requiredMin = (dialCode || "92").length + 10;
       if (digits.length < requiredMin)
         return "Enter full number including country code and at least 10 digits of the national number.";
@@ -116,12 +117,14 @@ export default function AuthModal({ open }) {
     },
   };
 
-  // Derived form validity
   const isSignupValid = useMemo(() => {
     const uErr = validators.username(signupForm.username);
     const eErr = validators.email(signupForm.email);
     const pErr = validators.password(signupForm.password);
-    const wErr = validators.whatsapp_number(signupForm.whatsapp_number, signupForm._phoneDialCode);
+    const wErr = validators.whatsapp_number(
+      signupForm.whatsapp_number,
+      signupForm._phoneDialCode
+    );
     return !(uErr || eErr || pErr || wErr);
   }, [signupForm]);
 
@@ -132,7 +135,6 @@ export default function AuthModal({ open }) {
   const clearFieldError = (field) =>
     setErrors((prev) => ({ ...prev, [field]: "" }));
 
-  // Phone input change handler
   const handlePhoneChange = (value, country) => {
     const normalized = value.startsWith("+") ? value : `+${value}`;
     setSignupForm((prev) => ({
@@ -149,6 +151,26 @@ export default function AuthModal({ open }) {
     setErrors({});
 
     try {
+      // ---------------- FORGOT PASSWORD ----------------
+      if (mode === "forgot") {
+        if (!loginForm.email) {
+          setErrors({ email: "Email is required." });
+          setLoading(false);
+          return;
+        }
+        await axios.post(`${API_URL}/auth/forgot-password`, {
+          email: loginForm.email,
+        });
+        showNotification(
+          "Password reset link sent to your email.",
+          "success"
+        );
+        setMode("login");
+        setLoading(false);
+        return;
+      }
+
+      // ---------------- LOGIN ----------------
       if (mode === "login") {
         if (!isLoginValid) {
           setErrors({
@@ -161,12 +183,16 @@ export default function AuthModal({ open }) {
         const res = await axios.post(`${API_URL}/auth/login`, loginForm);
         login(res.data);
         showNotification("Welcome back!", "success");
-      } else {
-        // Signup validation
+      }
+      // ---------------- SIGNUP ----------------
+      else {
         const uErr = validators.username(signupForm.username);
         const eErr = validators.email(signupForm.email);
         const pErr = validators.password(signupForm.password);
-        const wErr = validators.whatsapp_number(signupForm.whatsapp_number, signupForm._phoneDialCode);
+        const wErr = validators.whatsapp_number(
+          signupForm.whatsapp_number,
+          signupForm._phoneDialCode
+        );
 
         const newErrors = {
           ...(uErr ? { username: uErr } : {}),
@@ -181,85 +207,72 @@ export default function AuthModal({ open }) {
           return;
         }
 
-        // Check email existence endpoint (POST /auth/check-email)
         try {
-          const checkRes = await axios.post(`${API_URL}/auth/check-email`, { email: signupForm.email });
+          const checkRes = await axios.post(`${API_URL}/auth/check-email`, {
+            email: signupForm.email,
+          });
           if (checkRes?.data?.exists) {
-            setErrors({ email: "This email is already registered. Try logging in." });
+            setErrors({
+              email: "This email is already registered. Try logging in.",
+            });
             setLoading(false);
             return;
           }
         } catch (err) {
-          // If endpoint not present (404) or network issue, continue to signup and rely on signup endpoint
           if (err.response && err.response.status !== 404) {
-            console.warn("check-email returned non-404 error; continuing to signup", err.response?.data || err);
+            console.warn("check-email error", err.response?.data || err);
           }
         }
 
-        // Call signup endpoint
-        try {
-          const payload = {
-            username: signupForm.username,
-            email: signupForm.email,
-            password: signupForm.password,
-            whatsapp_number: signupForm.whatsapp_number,
-            role: "both",
-          };
+        const payload = {
+          username: signupForm.username,
+          email: signupForm.email,
+          password: signupForm.password,
+          whatsapp_number: signupForm.whatsapp_number,
+          role: "both",
+        };
 
-          const res = await axios.post(`${API_URL}/auth/signup`, payload);
-          signup(res.data);
-          showNotification("Account created — welcome!", "success");
-        } catch (signupErr) {
-          const serverMsg = signupErr.response?.data || {};
-          if (serverMsg.errors && typeof serverMsg.errors === "object") {
-            setErrors((prev) => ({ ...prev, ...serverMsg.errors }));
-          } else if (serverMsg.message) {
-            if (/email/i.test(serverMsg.message)) {
-              setErrors({ email: serverMsg.message });
-            } else if (/username/i.test(serverMsg.message)) {
-              setErrors({ username: serverMsg.message });
-            } else {
-              showNotification(serverMsg.message, "error");
-            }
-          } else {
-            showNotification("Signup failed. Please try again.", "error");
-          }
-          setLoading(false);
-          return;
-        }
+        const res = await axios.post(`${API_URL}/auth/signup`, payload);
+        signup(res.data);
+        showNotification("Account created — welcome!", "success");
       }
     } catch (err) {
       console.error(err);
-      showNotification(err.response?.data?.message || "Authentication failed", "error");
+      showNotification(
+        err.response?.data?.message || "Authentication failed",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+
+
   return (
     <Dialog
       open={Boolean(open)}
-      // prevent Esc & backdrop click to force auth (we ignore onClose reason)
       disableEscapeKeyDown
       onClose={() => { }}
-      // top-centered container
       sx={{
         "& .MuiDialog-container": {
           alignItems: "flex-start",
         },
       }}
-      BackdropProps={{ sx: { backgroundColor: "rgba(0,0,0,0.48)" } }}
+      BackdropProps={{
+        sx: { backgroundColor: "rgba(0,0,0,0.48)" },
+      }}
       PaperProps={{
         sx: {
-          mt: 6,                 // push slightly down from very top (top-centered)
-          maxHeight: "90vh",     // ensures whole modal can scroll inside viewport
-          overflowY: "auto",     // scroll the dialog content when tall
+          mt: 6,
+          maxHeight: "90vh",
+          overflowY: "auto",
           background: "transparent",
           boxShadow: "none",
           borderRadius: 0,
           overflowX: "hidden",
-          scrollbarWidth: "none", // Firefox
-          "&::-webkit-scrollbar": { display: "none" }, // Chrome, Safari
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
         },
       }}
     >
@@ -275,11 +288,116 @@ export default function AuthModal({ open }) {
       >
         <Card>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-            {mode === "login" ? "Sign In" : "Create Account"}
+            {mode === "login"
+              ? "Sign In"
+              : mode === "signup"
+                ? "Create Account"
+                : "Reset Password"}
           </Typography>
 
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            {mode === "signup" && (
+          {/* ---------- LOGIN ---------- */}
+          {mode === "login" && (
+            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+              <TextField
+                name="email"
+                label="Email"
+                fullWidth
+                margin="normal"
+                value={loginForm.email}
+                onChange={(e) =>
+                  setLoginForm((prev) => ({ ...prev, email: e.target.value }))
+                }
+                sx={textFieldSX}
+                required
+                error={Boolean(errors.email)}
+                helperText={errors.email}
+              />
+
+              <TextField
+                name="password"
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                fullWidth
+                margin="normal"
+                value={loginForm.password}
+                onChange={(e) =>
+                  setLoginForm((prev) => ({
+                    ...prev,
+                    password: e.target.value,
+                  }))
+                }
+                sx={textFieldSX}
+                required
+                error={Boolean(errors.password)}
+                helperText={errors.password}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword((s) => !s)}
+                        edge="end"
+                        size="large"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              {/* Forgot Password Button */}
+              <Typography sx={{ textAlign: "right", mt: 1 }}>
+                <Button
+                  onClick={() => {
+                    setMode("forgot");
+                    setErrors({});
+                  }}
+                  sx={{
+                    textTransform: "none",
+                    color: ACCENT,
+                    fontSize: "14px",
+                  }}
+                >
+                  Forgot Password?
+                </Button>
+              </Typography>
+
+              <Button
+                fullWidth
+                type="submit"
+                variant="contained"
+                disabled={loading || !isLoginValid}
+                sx={{
+                  mt: 2,
+                  backgroundColor: ACCENT,
+                  color: "#000",
+                  fontWeight: 700,
+                  borderRadius: 2,
+                  "&:hover": { backgroundColor: "#bf9f2e" },
+                  height: 48,
+                }}
+              >
+                {loading ? "Processing..." : "LOGIN"}
+              </Button>
+
+              <Typography sx={{ textAlign: "center", mt: 2, color: "#444" }}>
+                Don't have an account?{" "}
+                <Button
+                  onClick={() => {
+                    setMode("signup");
+                    setErrors({});
+                  }}
+                  sx={{ color: ACCENT, textTransform: "none", borderRadius: 0 }}
+                >
+                  Sign up
+                </Button>
+              </Typography>
+            </Box>
+          )}
+
+          {/* ---------- SIGNUP ---------- */}
+          {mode === "signup" && (
+            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
               <TextField
                 name="username"
                 label="Username"
@@ -293,66 +411,69 @@ export default function AuthModal({ open }) {
                 sx={textFieldSX}
                 required
                 error={Boolean(errors.username)}
-                helperText={errors.username || "Start with a letter, minimum 5 characters"}
+                helperText={
+                  errors.username || "Start with a letter, minimum 5 characters"
+                }
               />
-            )}
 
-            <TextField
-              name="email"
-              label="Email"
-              fullWidth
-              margin="normal"
-              value={mode === "login" ? loginForm.email : signupForm.email}
-              onChange={(e) => {
-                if (mode === "login") {
-                  setLoginForm((prev) => ({ ...prev, email: e.target.value }));
-                } else {
-                  setSignupForm((prev) => ({ ...prev, email: e.target.value }));
+              <TextField
+                name="email"
+                label="Email"
+                fullWidth
+                margin="normal"
+                value={signupForm.email}
+                onChange={(e) => {
+                  setSignupForm((prev) => ({
+                    ...prev,
+                    email: e.target.value,
+                  }));
+                  clearFieldError("email");
+                }}
+                sx={textFieldSX}
+                required
+                error={Boolean(errors.email)}
+                helperText={
+                  errors.email ||
+                  "Only @gmail.com or @hotmail.com allowed"
                 }
-                clearFieldError("email");
-              }}
-              sx={textFieldSX}
-              required
-              error={Boolean(errors.email)}
-              helperText={errors.email || (mode === "signup" ? "Only @gmail.com or @hotmail.com allowed" : "")}
-            />
+              />
 
-            <TextField
-              name="password"
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              fullWidth
-              margin="normal"
-              value={mode === "login" ? loginForm.password : signupForm.password}
-              onChange={(e) => {
-                if (mode === "login") {
-                  setLoginForm((prev) => ({ ...prev, password: e.target.value }));
-                } else {
-                  setSignupForm((prev) => ({ ...prev, password: e.target.value }));
+              <TextField
+                name="password"
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                fullWidth
+                margin="normal"
+                value={signupForm.password}
+                onChange={(e) => {
+                  setSignupForm((prev) => ({
+                    ...prev,
+                    password: e.target.value,
+                  }));
+                  clearFieldError("password");
+                }}
+                sx={textFieldSX}
+                required
+                error={Boolean(errors.password)}
+                helperText={
+                  errors.password ||
+                  "8+ chars, 1 uppercase, 1 number, 1 special char"
                 }
-                clearFieldError("password");
-              }}
-              sx={textFieldSX}
-              required
-              error={Boolean(errors.password)}
-              helperText={errors.password || (mode === "signup" ? "8+ chars, 1 uppercase, 1 number, 1 special char" : "")}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                      onClick={() => setShowPassword((s) => !s)}
-                      edge="end"
-                      size="large"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword((s) => !s)}
+                        edge="end"
+                        size="large"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-            {mode === "signup" && (
               <Box sx={{ mt: 1 }}>
                 <PhoneInput
                   country={"pk"}
@@ -361,7 +482,6 @@ export default function AuthModal({ open }) {
                   inputProps={{
                     name: "whatsapp_number",
                     required: true,
-                    autoFocus: false,
                   }}
                   containerStyle={{ width: "100%" }}
                   inputStyle={{
@@ -381,46 +501,98 @@ export default function AuthModal({ open }) {
                   dropdownStyle={{ borderRadius: 2 }}
                 />
                 {errors.whatsapp_number && (
-                  <Typography color="error" variant="caption" sx={{ display: "block", mt: 0.6 }}>
+                  <Typography
+                    color="error"
+                    variant="caption"
+                    sx={{ display: "block", mt: 0.6 }}
+                  >
                     {errors.whatsapp_number}
                   </Typography>
                 )}
               </Box>
-            )}
 
-            <Button
-              fullWidth
-              type="submit"
-              variant="contained"
-              disabled={loading || (mode === "signup" ? !isSignupValid : !isLoginValid)}
-              sx={{
-                mt: 2,
-                backgroundColor: ACCENT,
-                color: "#000",
-                textTransform: "none",
-                fontWeight: 700,
-                borderRadius: 2,
-                boxShadow: "none",
-                "&:hover": { backgroundColor: "#bf9f2e" },
-                height: 48,
-              }}
-            >
-              {loading ? "Processing..." : mode === "login" ? "LOGIN" : "SIGNUP"}
-            </Button>
-
-            <Typography sx={{ textAlign: "center", mt: 2, color: "#444" }}>
-              {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
               <Button
-                onClick={() => {
-                  setMode((m) => (m === "login" ? "signup" : "login"));
-                  setErrors({});
+                fullWidth
+                type="submit"
+                variant="contained"
+                disabled={loading || !isSignupValid}
+                sx={{
+                  mt: 2,
+                  backgroundColor: ACCENT,
+                  color: "#000",
+                  fontWeight: 700,
+                  borderRadius: 2,
+                  "&:hover": { backgroundColor: "#bf9f2e" },
+                  height: 48,
                 }}
-                sx={{ color: ACCENT, textTransform: "none", borderRadius: 0 }}
               >
-                {mode === "login" ? "Sign up" : "Login"}
+                {loading ? "Processing..." : "SIGNUP"}
               </Button>
-            </Typography>
-          </Box>
+
+              <Typography sx={{ textAlign: "center", mt: 2, color: "#444" }}>
+                Already have an account?{" "}
+                <Button
+                  onClick={() => {
+                    setMode("login");
+                    setErrors({});
+                  }}
+                  sx={{ color: ACCENT, textTransform: "none", borderRadius: 0 }}
+                >
+                  Login
+                </Button>
+              </Typography>
+            </Box>
+          )}
+
+          {/* ---------- FORGOT PASSWORD ---------- */}
+          {mode === "forgot" && (
+            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+              <TextField
+                name="email"
+                label="Enter your email"
+                fullWidth
+                margin="normal"
+                value={loginForm.email}
+                onChange={(e) =>
+                  setLoginForm((prev) => ({ ...prev, email: e.target.value }))
+                }
+                sx={textFieldSX}
+                required
+                error={Boolean(errors.email)}
+                helperText={errors.email}
+              />
+
+              <Button
+                fullWidth
+                type="submit"
+                variant="contained"
+                disabled={loading || !loginForm.email}
+                sx={{
+                  mt: 2,
+                  backgroundColor: ACCENT,
+                  color: "#000",
+                  fontWeight: 700,
+                  borderRadius: 2,
+                  "&:hover": { backgroundColor: "#bf9f2e" },
+                  height: 48,
+                }}
+              >
+                {loading ? "Processing..." : "Send Reset Link"}
+              </Button>
+
+              <Typography sx={{ textAlign: "center", mt: 2 }}>
+                <Button
+                  onClick={() => {
+                    setMode("login");
+                    setErrors({});
+                  }}
+                  sx={{ textTransform: "none", color: ACCENT }}
+                >
+                  Back to Login
+                </Button>
+              </Typography>
+            </Box>
+          )}
         </Card>
       </Box>
     </Dialog>

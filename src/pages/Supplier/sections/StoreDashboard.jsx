@@ -69,7 +69,7 @@ export default function SupplierDashboard() {
     uploadLimit: 0,
     planName: "Free Plan",
   });
-
+  
   const [salesTrend, setSalesTrend] = useState([]); // [{date, sales}]
   const [topProducts, setTopProducts] = useState([]); // [{title, total_quantity}]
   const [stockData, setStockData] = useState([]); // pie

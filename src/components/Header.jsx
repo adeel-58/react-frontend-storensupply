@@ -18,16 +18,17 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
-import loginSignupIcon from "../assets/login_signup.png";
+import loginSignupIcon from "/login_signup.png";
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import MenuIcon from "@mui/icons-material/Menu";
 //import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import whatsappIcon from "../assets/whatsapp.png";
+import whatsappIcon from "/whatsapp.png";
 import EmailIcon from "@mui/icons-material/Email";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/logo_final.png";
+import logo from "/logo_final.png";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 // Search bar styling
@@ -89,7 +90,7 @@ export default function Header() {
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "#1A1A1A" }}>
             <EmailIcon fontSize="small" />
-            storensupply@gmail.com
+            contact.storensupply@gmail.com
           </Box>
         </Box>
       )}
@@ -182,7 +183,8 @@ export default function Header() {
                 {/* Authentication */}
                 {!user ? (
                   <IconButton onClick={() => navigate("/login")}>
-                    <img src={loginSignupIcon} alt="Login/Signup" style={{ width: 24, height: 24 }} />
+                   
+                    <PersonOutlineIcon alt="Login/Signup" sx={{ width: 29, height: 29, color: "white" }} />
                   </IconButton>
                 ) : (
                   <>
@@ -256,7 +258,7 @@ export default function Header() {
             {!user ? (
               <>
                 <ListItemButton onClick={() => navigate("/login")}>
-                  <img src={loginSignupIcon} alt="Login/Signup" style={{ width: 32, height: 32 }} />
+                 <PersonOutlineIcon alt="Login/Signup" sx={{ width: 29, height: 29, color: "black" }} />
                   <span style={{ marginLeft: 10 }}>Login / Signup</span>
                 </ListItemButton>
               </>

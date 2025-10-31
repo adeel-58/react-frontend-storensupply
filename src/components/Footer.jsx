@@ -5,7 +5,7 @@ import { Facebook, Instagram, YouTube, LinkedIn } from "@mui/icons-material";
 export default function Footer() {
   return (
     <Box sx={{ bgcolor: "#1a1a1a", color: "white", pt: 7, pb: 3, px: { xs: 2, md: 6 }, fontFamily: "'Open Sans', sans-serif" }}>
-      <Grid container spacing={4} columnGap={18} sx={{ pb: 5 }}>
+      <Grid container spacing={4} columnGap={14} sx={{ pb: 5 }}>
 
         {/* Company Info */}
         <Grid item xs={12} md={3}>
@@ -61,7 +61,7 @@ export default function Footer() {
           <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "17px", mb: 2 }}>
             Contact Us
           </Typography>
-          <Typography variant="body2" sx={{ mb: 1.2, lineHeight: 1.8 }}>Email: storensupply@gmail.com</Typography>
+          <Typography variant="body2" sx={{ mb: 1.2, lineHeight: 1.8 }}>Email: contact.storensupply@gmail.com</Typography>
           <Typography variant="body2" sx={{ mb: 1.2, lineHeight: 1.8 }}>WhatsApp: +92 333 8051097</Typography>
           <Typography variant="body2" sx={{ mb: 2, lineHeight: 1.8 }}>Location: Islamabad, Pakistan</Typography>
 

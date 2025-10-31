@@ -19,44 +19,54 @@ import ContactUs from "./pages/Contactus/ContactUs";
 import ShopPage from "./pages/ShopPage/ShopPage";
 import Plans from "./pages/Plans/Plans";
 import FeaturesPage from "./pages/FeaturePage/FeaturesPage";
+import ResetPassword from "./pages/ResetPassword/ResetPassword";
 
 function App() {
   const { user, loading } = useAuth();
 
-  // while token verification runs, render nothing to avoid flicker
   if (loading) return null;
 
   return (
     <>
       <Header />
-      <AuthGate>
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+      <Routes>
+        {/* Public routes - no AuthGate needed */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/plans" element={<Plans />} />
+        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/" element={<Home />} />
 
-            {/* Protected pages - they will be accessible only if user is set */}
-            {user && (
-              <>
-                <Route path="/seller" element={<SellerProfile />} />
-                <Route path="/supplier-profile" element={<SupplierProfile />} />
-                <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
-                <Route path="/supplier/:supplierId" element={<SupplierProfilePage />} />
-                <Route path="/supplier/:supplierId/product/:productId" element={<ProductDetailPage />} />
-                <Route path="/about-us" element={<AboutUs />} />
-                <Route path="/contact-us" element={<ContactUs />} />
-                <Route path="/shop" element={<ShopPage />} />
-                <Route path="/plans" element={<Plans />} />
-                <Route path="/features" element={<FeaturesPage />} />
-                
-              </>
-            )}
+        {/* All other routes wrapped in AuthGate */}
+        <Route
+          path="/*"
+          element={
+            <AuthGate>
+              <Routes>
 
 
-          </Routes>
-        </main>
-      </AuthGate>
+                {/* Protected pages - accessible only if user is set */}
+                {user && (
+                  <>
+
+                    <Route path="/seller" element={<SellerProfile />} />
+                    <Route path="/supplier-profile" element={<SupplierProfile />} />
+                    <Route path="/supplier-dashboard" element={<SupplierDashboard />} />
+                    <Route path="/supplier/:supplierId" element={<SupplierProfilePage />} />
+                    <Route path="/supplier/:supplierId/product/:productId" element={<ProductDetailPage />} />
+
+                    <Route path="/shop" element={<ShopPage />} />
+
+                  </>
+                )}
+              </Routes>
+            </AuthGate>
+          }
+        />
+      </Routes>
       <Footer />
     </>
   );
