@@ -114,7 +114,7 @@ export default function Login() {
   return (
     <Paper
       sx={{
-        maxWidth: 400,
+        maxWidth: 420,
         mx: "auto",
         p: 4,
         mt: 6,

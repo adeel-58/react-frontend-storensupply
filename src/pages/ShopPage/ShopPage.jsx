@@ -13,16 +13,21 @@ import {
     Button,
     CardHeader,
     CircularProgress,
+    useMediaQuery,
+    useTheme,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-//import queryString from "query-string"; // optional: for easier parsing
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+
 const IMAGE_BASE_URL = "";
 
 const ShopPage = () => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
     const navigate = useNavigate();
     const location = useLocation();
     const [searchQuery, setSearchQuery] = useState("");
@@ -30,7 +35,7 @@ const ShopPage = () => {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const q = params.get("search") || "";
-        const cat = params.get("category") || "all"; // NEW: get category
+        const cat = params.get("category") || "all";
         setSearchQuery(q);
         setSelectedCategory(cat);
     }, [location.search]);
@@ -41,7 +46,6 @@ const ShopPage = () => {
     const [categories, setCategories] = useState([]);
 
     // Filters
-    //  const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [sortBy, setSortBy] = useState("recent");
     const [country, setCountry] = useState("");
@@ -119,33 +123,45 @@ const ShopPage = () => {
     };
 
     return (
-        <Box sx={{ py: 8, px: { xs: 2, md: 6 }, minHeight: "100vh", bgcolor: "#fff" }}>
-            <Typography variant="h4" sx={{ mb: 4, fontWeight: 700, textAlign: "center" }}>
+        <Box sx={{
+            py: isMobile ? 4 : 8,
+            px: isMobile ? 2 : { xs: 2, md: 6 },
+            minHeight: "100vh",
+            bgcolor: "#fff"
+        }}>
+            <Typography variant="h4" sx={{
+                mb: isMobile ? 3 : 4,
+                fontWeight: 700,
+                textAlign: "center",
+                fontSize: isMobile ? "22px" : "inherit",
+            }}>
                 View All Products
             </Typography>
 
             {/* FILTERS */}
-            <Card sx={{ mb: 4, boxShadow: "none", }}>
-                <CardContent>
-                    <Grid container spacing={3} alignItems="center">
+            <Card sx={{ mb: isMobile ? 3 : 4, boxShadow: "none" }}>
+                <CardContent sx={{ p: isMobile ? 1.5 : 2 }}>
+                    <Grid container spacing={isMobile ? 1.5 : 3} alignItems="center">
                         <Grid item xs={12} md={4}>
                             <TextField
                                 fullWidth
                                 placeholder="Search products..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                size={isMobile ? "small" : "medium"}
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">
-                                            <Search />
+                                            <Search fontSize={isMobile ? "small" : "medium"} />
                                         </InputAdornment>
                                     ),
-                                    sx: { height: 40, fontSize: "17px" },
+                                    sx: {
+                                        height: isMobile ? 35 : 40,
+                                        fontSize: isMobile ? "14px" : "17px"
+                                    },
                                 }}
                             />
                         </Grid>
-
-
 
                         <Grid item xs={12} sm={6} md={2}>
                             <TextField
@@ -155,11 +171,19 @@ const ShopPage = () => {
                                 value={country}
                                 onChange={(e) => setCountry(e.target.value)}
                                 SelectProps={{ native: true }}
+                                size={isMobile ? "small" : "medium"}
                                 sx={{
-                                    "& .MuiInputBase-root": { height: 40, fontSize: "17px", minWidth: "120px" },
-                                    "& label": { fontSize: "13px", top: "-29px" },
+                                    "& .MuiInputBase-root": {
+                                        height: isMobile ? 35 : 40,
+                                        fontSize: isMobile ? "14px" : "17px",
+                                        minWidth: "120px"
+                                    },
+                                    "& label": {
+                                        fontSize: isMobile ? "12px" : "13px",
+                                        top: isMobile ? "-25px" : "-29px"
+                                    },
                                 }}
-                                inputProps={{ style: { fontSize: "17px" } }}
+                                inputProps={{ style: { fontSize: isMobile ? "14px" : "17px" } }}
                             >
                                 <option value="">All</option>
                                 <option value="USA">USA</option>
@@ -176,11 +200,18 @@ const ShopPage = () => {
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
                                 SelectProps={{ native: true }}
+                                size={isMobile ? "small" : "medium"}
                                 sx={{
-                                    "& .MuiInputBase-root": { height: 40, fontSize: "17px" },
-                                    "& label": { fontSize: "17px", top: "-5px" },
+                                    "& .MuiInputBase-root": {
+                                        height: isMobile ? 35 : 40,
+                                        fontSize: isMobile ? "14px" : "17px"
+                                    },
+                                    "& label": {
+                                        fontSize: isMobile ? "12px" : "17px",
+                                        top: isMobile ? "-23px" : "-5px"
+                                    },
                                 }}
-                                inputProps={{ style: { fontSize: "17px" } }}
+                                inputProps={{ style: { fontSize: isMobile ? "14px" : "17px" } }}
                             >
                                 <option value="all">All Categories</option>
                                 {categories.map((cat) => (
@@ -199,11 +230,18 @@ const ShopPage = () => {
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
                                 SelectProps={{ native: true }}
+                                size={isMobile ? "small" : "medium"}
                                 sx={{
-                                    "& .MuiInputBase-root": { height: 40, fontSize: "17px" },
-                                    "& label": { fontSize: "17px", top: "-5px" },
+                                    "& .MuiInputBase-root": {
+                                        height: isMobile ? 35 : 40,
+                                        fontSize: isMobile ? "14px" : "17px"
+                                    },
+                                    "& label": {
+                                        fontSize: isMobile ? "12px" : "17px",
+                                        top: isMobile ? "-23px" : "-5px"
+                                    },
                                 }}
-                                inputProps={{ style: { fontSize: "17px" } }}
+                                inputProps={{ style: { fontSize: isMobile ? "14px" : "17px" } }}
                             >
                                 <option value="recent">Most Recent</option>
                                 <option value="popular">Most Popular</option>
@@ -213,7 +251,10 @@ const ShopPage = () => {
                         </Grid>
                     </Grid>
 
-                    <Typography variant="body2" sx={{ mt: 2 }}>
+                    <Typography variant="body2" sx={{
+                        mt: 2,
+                        fontSize: isMobile ? "12px" : "inherit"
+                    }}>
                         Showing {filteredProducts.length} of {products.length} products
                     </Typography>
                 </CardContent>
@@ -225,27 +266,31 @@ const ShopPage = () => {
                     <CircularProgress size={60} />
                 </Box>
             ) : filteredProducts.length === 0 ? (
-                <Card sx={{ p: 5, textAlign: "center", boxShadow: "none" }}>
-                    <Typography variant="h6" color="text.secondary">
+                <Card sx={{ p: isMobile ? 3 : 5, textAlign: "center", boxShadow: "none" }}>
+                    <Typography variant="h6" color="text.secondary" sx={{ fontSize: isMobile ? "16px" : "inherit" }}>
                         No products found
                     </Typography>
                 </Card>
             ) : (
-                <Grid container spacing={3}>
+                <Grid container spacing={isMobile ? 1.5 : 3}>
                     {filteredProducts.map((product) => (
-                        <Grid item xs={12} sm={6} md={4} key={product.product_id}>
+                        <Grid item xs={6} sm={6} md={4} key={product.product_id}>
                             <Box sx={{ display: "flex", justifyContent: "center" }}>
                                 <Card
                                     sx={{
-                                        width: 270,
-                                        height: 400,
+                                        width: isMobile ? "100%" : 270,
+                                        height: isMobile ? 320 : 400,
                                         display: "flex",
                                         flexDirection: "column",
                                         boxShadow: "none",
                                         border: "1px solid #e0e0e0",
                                         cursor: "pointer",
                                         overflow: "hidden",
-                                        position: "relative", // needed for absolute sticker
+                                        position: "relative",
+                                        transition: "transform 0.2s",
+                                        "&:hover": {
+                                            transform: "translateY(-4px)",
+                                        },
                                     }}
                                     onClick={() => openProduct(product)}
                                 >
@@ -257,11 +302,12 @@ const ShopPage = () => {
                                             right: 0,
                                             backgroundColor: "#1e1e1e",
                                             color: "white",
-                                            padding: "6px 20px",
-                                            borderTopLeftRadius: "15px",
-                                            borderBottomLeftRadius: "15px",
-                                            fontSize: "15px",
+                                            padding: isMobile ? "4px 12px" : "6px 20px",
+                                            borderTopLeftRadius: isMobile ? "10px" : "15px",
+                                            borderBottomLeftRadius: isMobile ? "10px" : "15px",
+                                            fontSize: isMobile ? "12px" : "15px",
                                             fontWeight: "bold",
+                                            zIndex: 1,
                                         }}
                                     >
                                         Stock: {product.stock_quantity}
@@ -269,23 +315,32 @@ const ShopPage = () => {
 
                                     <CardMedia
                                         component="img"
-                                        height="250"
+                                        height={isMobile ? 180 : 250}
                                         image={product.product_image || "/placeholder-product.png"}
                                         alt={product.product_name}
-                                        sx={{ objectFit: "contain", backgroundColor: "#f5f5f5", p: 1 }}
+                                        sx={{
+                                            objectFit: "contain",
+                                            backgroundColor: "#f5f5f5",
+                                            p: 1
+                                        }}
                                     />
 
-                                    <CardContent sx={{ flexGrow: 1 }}>
+                                    <CardContent sx={{
+                                        flexGrow: 1,
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        p: isMobile ? 1 : 2,
+                                    }}>
                                         <Typography
                                             sx={{
-                                                fontSize: "17px",
+                                                fontSize: isMobile ? "14px" : "17px",
                                                 fontWeight: "bold",
                                                 display: "-webkit-box",
                                                 WebkitLineClamp: 2,
                                                 WebkitBoxOrient: "vertical",
                                                 overflow: "hidden",
                                                 textOverflow: "ellipsis",
-                                                minHeight: "48px",
+                                                minHeight: isMobile ? "36px" : "48px",
                                             }}
                                             gutterBottom
                                             title={product.product_name}
@@ -293,17 +348,40 @@ const ShopPage = () => {
                                             {product.product_name}
                                         </Typography>
 
-                                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                                            <Typography variant="h5" color="primary" fontWeight="bold">
+                                        <Stack
+                                            direction="row"
+                                            justifyContent="space-between"
+                                            alignItems="center"
+                                            mb={1}
+                                            mt="auto"
+                                        >
+                                            <Typography
+                                                variant="h5"
+                                                color="primary"
+                                                fontWeight="bold"
+                                                sx={{ fontSize: isMobile ? "16px" : "inherit" }}
+                                            >
                                                 ${Number(product.selling_price).toFixed(2)}
                                             </Typography>
-                                            {product.category && <Chip label={product.category} size="small" color="default" />}
+                                            {product.category && (
+                                                <Chip
+                                                    label={product.category}
+                                                    size={isMobile ? "small" : "medium"}
+                                                    color="default"
+                                                    sx={{ fontSize: isMobile ? "11px" : "inherit" }}
+                                                />
+                                            )}
                                         </Stack>
 
                                         <Typography
                                             variant="body2"
                                             color="text.secondary"
-                                            sx={{ mt: 1, textDecoration: "underline", cursor: "pointer" }}
+                                            sx={{
+                                                mt: 1,
+                                                textDecoration: "underline",
+                                                cursor: "pointer",
+                                                fontSize: isMobile ? "12px" : "inherit"
+                                            }}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 openSupplier(product.supplier_id);
@@ -312,10 +390,7 @@ const ShopPage = () => {
                                             Supplier: {product.supplier_name || "A"}
                                         </Typography>
                                     </CardContent>
-
-
                                 </Card>
-
                             </Box>
                         </Grid>
                     ))}

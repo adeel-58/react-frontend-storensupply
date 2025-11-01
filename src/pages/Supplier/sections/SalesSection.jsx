@@ -26,6 +26,9 @@ import {
   FormControl,
   InputLabel,
   IconButton,
+  useMediaQuery,
+  useTheme,
+  Card,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -36,6 +39,10 @@ import { useAuth } from "../../../context/AuthContext";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function SalesSection() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+
   const { user } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -218,7 +225,6 @@ export default function SalesSection() {
 
   // Delete sale
   const handleDeleteSale = async (id) => {
-    //if (!window.confirm("Are you sure you want to delete this sale?")) return;
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`${API_URL}/sales/${id}`, { headers: { Authorization: `Bearer ${token}` } });
@@ -282,16 +288,44 @@ export default function SalesSection() {
 
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "space-between", pb: 5, pt: 5, px: 8, backgroundColor: "#1a1a1a" }}>
-        <Typography variant="h6" fontWeight="bold" color="white">Sales & Orders</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => { setOpenAddSale(true); }}>
-          Add Sale
+      {/* Header */}
+      <Box sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: isMobile ? "flex-start" : "center",
+        pb: isMobile ? 3 : 5,
+        pt: isMobile ? 3 : 5,
+        px: isMobile ? 2 : 8,
+        backgroundColor: "#1a1a1a",
+        flexDirection: isMobile ? "column" : "row",
+        gap: isMobile ? 2 : 0,
+      }}>
+        <Typography variant="h6" fontWeight="bold" color="white" sx={{ fontSize: isMobile ? "16px" : "20px" }}>
+          Sales & Orders
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => { setOpenAddSale(true); }}
+          size={isMobile ? "small" : "medium"}
+          sx={{ width: isMobile ? "100%" : "auto", fontSize: isMobile ? "12px" : "14px" }}
+        >
+          {isMobile ? "Add" : "Add Sale"}
         </Button>
       </Box>
 
-      <Paper sx={{ p: 2, pt: 6, px:8 }}>
-        <Stack direction="row" spacing={8} alignItems="center">
-          <FormControl size="small" sx={{ minWidth: 180 }}>
+      {/* Filter & Summary Section */}
+      <Paper sx={{
+        p: isMobile ? 2 : 2,
+        pt: isMobile ? 3 : 6,
+        px: isMobile ? 2 : 8,
+      }}>
+        <Stack
+          direction={isMobile ? "column" : "row"}
+          spacing={isMobile ? 2 : 8}
+          alignItems={isMobile ? "stretch" : "center"}
+        >
+          <FormControl size="small" sx={{ minWidth: isMobile ? "100%" : 180 }}>
             <InputLabel>Period</InputLabel>
             <Select label="Period" value={filterRange} onChange={(e) => setFilterRange(e.target.value)}>
               <MenuItem value="last_7">Last 7 days</MenuItem>
@@ -303,74 +337,205 @@ export default function SalesSection() {
           </FormControl>
 
           {filterRange === "custom" && (
-            <>
-              <TextField label="Start" type="date" size="small" InputLabelProps={{ shrink: true }}
-                value={customRange.start} onChange={(e) => setCustomRange((c) => ({ ...c, start: e.target.value }))} />
-              <TextField label="End" type="date" size="small" InputLabelProps={{ shrink: true }}
-                value={customRange.end} onChange={(e) => setCustomRange((c) => ({ ...c, end: e.target.value }))} />
-            </>
+            <Stack direction={isMobile ? "column" : "row"} spacing={1} sx={{ width: isMobile ? "100%" : "auto" }}>
+              <TextField
+                label="Start"
+                type="date"
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                value={customRange.start}
+                onChange={(e) => setCustomRange((c) => ({ ...c, start: e.target.value }))}
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                label="End"
+                type="date"
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                value={customRange.end}
+                onChange={(e) => setCustomRange((c) => ({ ...c, end: e.target.value }))}
+                sx={{ flex: 1 }}
+              />
+            </Stack>
           )}
 
-          <Box sx={{ ml: "auto", display: "flex", gap: 6 }}>
-            <Box><Typography variant="subtitle2" fontSize={17}>Total Sales</Typography><Typography variant="h6" color="#D4AF37" fontWeight={700}>$ {formatCurrency(summary.total_amount)}</Typography></Box>
-            <Box><Typography variant="subtitle2" fontSize={17}>Units Sold</Typography><Typography variant="h6"  color="#D4AF37" fontWeight={700}>{summary.total_units}</Typography></Box>
-            <Box><Typography variant="subtitle2" fontSize={17}>Profit</Typography><Typography variant="h6"  color="#D4AF37" fontWeight={700}>$ {formatCurrency(summary.total_profit)}</Typography></Box>
+          {/* Summary Stats */}
+          <Box sx={{
+            display: "flex",
+            flexDirection: isMobile ? "column" : "row",
+            gap: isMobile ? 2 : 6,
+            ml: isMobile ? 0 : "auto",
+            width: isMobile ? "100%" : "auto",
+          }}>
+            <Box sx={{ textAlign: isMobile ? "center" : "left" }}>
+              <Typography variant="subtitle2" sx={{ fontSize: isMobile ? "13px" : "17px" }}>
+                Total Sales
+              </Typography>
+              <Typography variant="h6" color="#D4AF37" fontWeight={700} sx={{ fontSize: isMobile ? "16px" : "inherit" }}>
+                $ {formatCurrency(summary.total_amount)}
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: isMobile ? "center" : "left" }}>
+              <Typography variant="subtitle2" sx={{ fontSize: isMobile ? "13px" : "17px" }}>
+                Units Sold
+              </Typography>
+              <Typography variant="h6" color="#D4AF37" fontWeight={700} sx={{ fontSize: isMobile ? "16px" : "inherit" }}>
+                {summary.total_units}
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: isMobile ? "center" : "left" }}>
+              <Typography variant="subtitle2" sx={{ fontSize: isMobile ? "13px" : "17px" }}>
+                Profit
+              </Typography>
+              <Typography variant="h6" color="#D4AF37" fontWeight={700} sx={{ fontSize: isMobile ? "16px" : "inherit" }}>
+                $ {formatCurrency(summary.total_profit)}
+              </Typography>
+            </Box>
           </Box>
         </Stack>
       </Paper>
 
+      {/* Sales Table / Card View */}
       <Paper>
-        <TableContainer sx={{ px: 8 , pb:7 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Date</TableCell>
-                <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Product</TableCell>
-                <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Qty</TableCell>
-                <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Sold Price</TableCell>
-                <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Total</TableCell>
-                <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Profit</TableCell>
-                <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Channel</TableCell>
-                <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Notes</TableCell>
-                <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={9} align="center"><CircularProgress /></TableCell></TableRow>
-              ) : sales.length === 0 ? (
-                <TableRow><TableCell colSpan={9} align="center">No sales for selected period.</TableCell></TableRow>
-              ) : (
-                sales.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell>{new Date(s.sale_date).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Avatar src={s.product_image || "/no-image.png"} sx={{ width: 40, height: 40 }} />
-                        <Typography variant="body2">{s.product_title}</Typography>
-                      </Stack>
-                    </TableCell>
-                    <TableCell>{s.quantity_sold}</TableCell>
-                    <TableCell>$ {formatCurrency(s.sold_price_per_unit)}</TableCell>
-                    <TableCell>$ {formatCurrency(s.total_sale_amount)}</TableCell>
-                    <TableCell>$ {formatCurrency(s.profit)}</TableCell>
-                    <TableCell>{s.sale_channel}</TableCell>
-                    <TableCell>{s.notes || "-"}</TableCell>
-                    <TableCell>
-                      <IconButton size="small" onClick={() => openEditDialog(s)}><EditIcon /></IconButton>
-                      <IconButton size="small" color="error" onClick={() => handleDeleteSale(s.id)}><DeleteIcon /></IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        {isMobile ? (
+          // Mobile Card View
+          <Box sx={{ p: 2, pb: 5 }}>
+            {loading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+                <CircularProgress />
+              </Box>
+            ) : sales.length === 0 ? (
+              <Typography align="center" color="text.secondary" sx={{ p: 3 }}>
+                No sales for selected period.
+              </Typography>
+            ) : (
+              sales.map((s) => (
+                <Card key={s.id} sx={{ mb: 2, p: 2, backgroundColor: "#f9f9f9" }}>
+                  <Stack spacing={1}>
+                    <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ mb: 1 }}>
+                      <Avatar src={s.product_image || "/no-image.png"} sx={{ width: 50, height: 50, flexShrink: 0 }} />
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle2" fontWeight="bold" noWrap>
+                          {s.product_title}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {new Date(s.sale_date).toLocaleDateString()}
+                        </Typography>
+                      </Box>
+                    </Stack>
+
+                    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Qty
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          {s.quantity_sold}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Sold Price
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          $ {formatCurrency(s.sold_price_per_unit)}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Total
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          $ {formatCurrency(s.total_sale_amount)}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Profit
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold" sx={{ color: "#D4AF37" }}>
+                          $ {formatCurrency(s.profit)}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Typography variant="caption" color="text.secondary">
+                      Channel: <strong>{s.sale_channel}</strong>
+                    </Typography>
+
+                    {s.notes && (
+                      <Typography variant="caption" color="text.secondary">
+                        Notes: {s.notes}
+                      </Typography>
+                    )}
+
+                    <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                      <IconButton size="small" onClick={() => openEditDialog(s)} sx={{ flex: 1 }}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" color="error" onClick={() => handleDeleteSale(s.id)} sx={{ flex: 1 }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Stack>
+                  </Stack>
+                </Card>
+              ))
+            )}
+          </Box>
+        ) : (
+          // Desktop Table View
+          <TableContainer sx={{ px: 8, pb: 7 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Date</TableCell>
+                  <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Product</TableCell>
+                  <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Qty</TableCell>
+                  <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Sold Price</TableCell>
+                  <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Total</TableCell>
+                  <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Profit</TableCell>
+                  <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Channel</TableCell>
+                  <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Notes</TableCell>
+                  <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {loading ? (
+                  <TableRow><TableCell colSpan={9} align="center"><CircularProgress /></TableCell></TableRow>
+                ) : sales.length === 0 ? (
+                  <TableRow><TableCell colSpan={9} align="center">No sales for selected period.</TableCell></TableRow>
+                ) : (
+                  sales.map((s) => (
+                    <TableRow key={s.id}>
+                      <TableCell>{new Date(s.sale_date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Avatar src={s.product_image || "/no-image.png"} sx={{ width: 40, height: 40 }} />
+                          <Typography variant="body2">{s.product_title}</Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>{s.quantity_sold}</TableCell>
+                      <TableCell>$ {formatCurrency(s.sold_price_per_unit)}</TableCell>
+                      <TableCell>$ {formatCurrency(s.total_sale_amount)}</TableCell>
+                      <TableCell>$ {formatCurrency(s.profit)}</TableCell>
+                      <TableCell>{s.sale_channel}</TableCell>
+                      <TableCell>{s.notes || "-"}</TableCell>
+                      <TableCell>
+                        <IconButton size="small" onClick={() => openEditDialog(s)}><EditIcon /></IconButton>
+                        <IconButton size="small" color="error" onClick={() => handleDeleteSale(s.id)}><DeleteIcon /></IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </Paper>
 
       {/* Add Sale Dialog */}
-      <Dialog open={openAddSale} onClose={() => setOpenAddSale(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Add Sale</DialogTitle>
+      <Dialog open={openAddSale} onClose={() => setOpenAddSale(false)} fullWidth maxWidth={isMobile ? "xs" : "sm"}>
+        <DialogTitle sx={{ fontSize: isMobile ? "16px" : "inherit" }}>Add Sale</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
             <FormControl fullWidth size="small">
@@ -390,14 +555,28 @@ export default function SalesSection() {
               </Select>
             </FormControl>
 
-            <Stack direction="row" spacing={2}>
-              <TextField label="Quantity" name="quantity" type="number" size="small" value={addSaleForm.quantity}
-                onChange={handleAddSaleFormChange} sx={{ width: 150 }} InputProps={{ inputProps: { min: 1 } }} />
+            <Stack direction={isMobile ? "column" : "row"} spacing={isMobile ? 1 : 2}>
+              <TextField
+                label="Quantity"
+                name="quantity"
+                type="number"
+                size="small"
+                value={addSaleForm.quantity}
+                onChange={handleAddSaleFormChange}
+                sx={{ width: isMobile ? "100%" : 150 }}
+                InputProps={{ inputProps: { min: 1 } }}
+              />
 
-              <TextField label="Sold Price / unit" name="sold_price_per_unit" size="small" value={addSaleForm.sold_price_per_unit}
-                onChange={handleAddSaleFormChange} sx={{ width: 200 }} />
+              <TextField
+                label="Sold Price / unit"
+                name="sold_price_per_unit"
+                size="small"
+                value={addSaleForm.sold_price_per_unit}
+                onChange={handleAddSaleFormChange}
+                sx={{ width: isMobile ? "100%" : 200 }}
+              />
 
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small" sx={{ width: isMobile ? "100%" : 150, minWidth: isMobile ? "100%" : 150 }}>
                 <InputLabel>Channel</InputLabel>
                 <Select label="Channel" name="sale_channel" value={addSaleForm.sale_channel} onChange={handleAddSaleFormChange}>
                   <MenuItem value="local">Local</MenuItem>
@@ -408,41 +587,86 @@ export default function SalesSection() {
               </FormControl>
             </Stack>
 
-            <TextField label="Notes (optional)" name="notes" value={addSaleForm.notes} onChange={handleAddSaleFormChange} fullWidth multiline rows={2} />
+            <TextField
+              label="Notes (optional)"
+              name="notes"
+              value={addSaleForm.notes}
+              onChange={handleAddSaleFormChange}
+              fullWidth
+              multiline
+              rows={2}
+              size={isMobile ? "small" : "medium"}
+            />
 
             <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-              <Typography variant="subtitle2">Total</Typography>
-              <Typography variant="subtitle1">$ {formatCurrency((Number(addSaleForm.quantity) || 0) * (parseFloat(addSaleForm.sold_price_per_unit) || 0))}</Typography>
+              <Typography variant="subtitle2" sx={{ fontSize: isMobile ? "12px" : "inherit" }}>
+                Total
+              </Typography>
+              <Typography variant="subtitle1" sx={{ fontSize: isMobile ? "14px" : "inherit" }}>
+                $ {formatCurrency((Number(addSaleForm.quantity) || 0) * (parseFloat(addSaleForm.sold_price_per_unit) || 0))}
+              </Typography>
             </Box>
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenAddSale(false)} disabled={savingSale}>Cancel</Button>
-          <Button variant="contained" onClick={handleCreateSale} disabled={savingSale}>{savingSale ? <CircularProgress size={18} /> : "Save Sale"}</Button>
+        <DialogActions sx={{ flexDirection: isMobile ? "column" : "row", gap: isMobile ? 1 : 0 }}>
+          <Button onClick={() => setOpenAddSale(false)} disabled={savingSale} fullWidth={isMobile}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleCreateSale} disabled={savingSale} fullWidth={isMobile}>
+            {savingSale ? <CircularProgress size={18} /> : "Save Sale"}
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* Edit Sale Dialog */}
-      <Dialog open={openEditSale} onClose={() => setOpenEditSale(false)} fullWidth maxWidth="xs">
-        <DialogTitle>Edit Sale</DialogTitle>
+      <Dialog open={openEditSale} onClose={() => setOpenEditSale(false)} fullWidth maxWidth={isMobile ? "xs" : "xs"}>
+        <DialogTitle sx={{ fontSize: isMobile ? "16px" : "inherit" }}>Edit Sale</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2}>
-            <TextField label="Quantity" type="number" size="small" value={editSaleForm.quantity_sold ?? ""} onChange={(e) => setEditSaleForm((s) => ({ ...s, quantity_sold: Number(e.target.value) }))} />
-            <TextField label="Sold Price / unit" size="small" value={editSaleForm.sold_price_per_unit ?? ""} onChange={(e) => setEditSaleForm((s) => ({ ...s, sold_price_per_unit: Number(e.target.value) }))} />
+            <TextField
+              label="Quantity"
+              type="number"
+              size="small"
+              value={editSaleForm.quantity_sold ?? ""}
+              onChange={(e) => setEditSaleForm((s) => ({ ...s, quantity_sold: Number(e.target.value) }))}
+              fullWidth
+            />
+            <TextField
+              label="Sold Price / unit"
+              size="small"
+              value={editSaleForm.sold_price_per_unit ?? ""}
+              onChange={(e) => setEditSaleForm((s) => ({ ...s, sold_price_per_unit: Number(e.target.value) }))}
+              fullWidth
+            />
             <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-              <Typography variant="subtitle2">New Total</Typography>
-              <Typography variant="subtitle1">$ {formatCurrency((Number(editSaleForm.quantity_sold) || 0) * (Number(editSaleForm.sold_price_per_unit) || 0))}</Typography>
+              <Typography variant="subtitle2" sx={{ fontSize: isMobile ? "12px" : "inherit" }}>
+                New Total
+              </Typography>
+              <Typography variant="subtitle1" sx={{ fontSize: isMobile ? "14px" : "inherit" }}>
+                $ {formatCurrency((Number(editSaleForm.quantity_sold) || 0) * (Number(editSaleForm.sold_price_per_unit) || 0))}
+              </Typography>
             </Box>
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenEditSale(false)} disabled={savingEdit}>Cancel</Button>
-          <Button variant="contained" onClick={handleSaveEdit} disabled={savingEdit}>{savingEdit ? <CircularProgress size={18} /> : "Save"}</Button>
+        <DialogActions sx={{ flexDirection: isMobile ? "column" : "row", gap: isMobile ? 1 : 0 }}>
+          <Button onClick={() => setOpenEditSale(false)} disabled={savingEdit} fullWidth={isMobile}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleSaveEdit} disabled={savingEdit} fullWidth={isMobile}>
+            {savingEdit ? <CircularProgress size={18} /> : "Save"}
+          </Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} autoHideDuration={3500} onClose={closeSnackbar} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
-        <Alert onClose={closeSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>{snackbar.message}</Alert>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3500}
+        onClose={closeSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={closeSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
       </Snackbar>
     </Box>
   );

@@ -21,6 +21,9 @@ import {
   Alert,
   IconButton,
   Snackbar,
+  useMediaQuery,
+  useTheme,
+  Card,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -33,6 +36,10 @@ import { useAuth } from "../../../context/AuthContext";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function InventorySection() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,15 +133,6 @@ export default function InventorySection() {
     fetchProducts();
   }, []);
 
-  // Handle input change
-  // const handleChange = (e) => {
-  // const { name, value } = e.target;
-  // setNewProduct((prev) => ({ ...prev, [name]: value }));
-  // };
-
-  //const onMainImageChange = (e) => setMainImageFile(e.target.files?.[0] ?? null);
-  //const onOtherImagesChange = (e) => setOtherImageFiles(Array.from(e.target.files || []));
-
   // Add or Edit Product
   const handleSaveProduct = async (isEdit = false) => {
     setSaving(true);
@@ -195,7 +193,6 @@ export default function InventorySection() {
 
   // Delete product
   const handleDelete = async (id) => {
-    // if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       setDeletingId(id);
       const token = localStorage.getItem("token");
@@ -244,9 +241,7 @@ export default function InventorySection() {
     const backendStatus = status === "paused" ? "out_of_stock" : status === "all" ? "" : status;
     fetchProducts(backendStatus);
   };
-  // Inside your InventorySection component, replace handleChange, onMainImageChange, onOtherImagesChange
 
-  // ----------------------------
   // Limit Snackbar for validation warnings
   const [limitSnackbar, setLimitSnackbar] = useState({
     open: false,
@@ -259,7 +254,6 @@ export default function InventorySection() {
 
   const handleCloseLimitSnackbar = () => setLimitSnackbar({ ...limitSnackbar, open: false });
 
-  // ----------------------------
   // Handle input change with validations
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -280,7 +274,6 @@ export default function InventorySection() {
     setNewProduct((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ----------------------------
   // Main Image validation
   const onMainImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -300,7 +293,6 @@ export default function InventorySection() {
     setMainImageFile(file);
   };
 
-  // ----------------------------
   // Other Images validation
   const onOtherImagesChange = (e) => {
     const files = Array.from(e.target.files || []);
@@ -320,51 +312,194 @@ export default function InventorySection() {
     setOtherImageFiles(filteredFiles);
   };
 
-
   if (loading) return <CircularProgress sx={{ mt: 5 }} />;
 
   return (
-    <Box>
-      <Box sx={{ display: "flex", justifyContent: "space-between", pb: 5, pt: 5, px: 8, backgroundColor: "#1a1a1a" }}>
-        <Typography variant="h6" fontWeight="bold" color="white">
+    <Box sx={{bgcolor:"#ffffff", border: "1px solid transparent",}}>
+      {/* Header Section */}
+      <Box sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: isMobile ? "flex-start" : "center",
+        pb: isMobile ? 3 : 5,
+        pt: isMobile ? 3 : 5,
+        px: isMobile ? 2 : 8,
+        backgroundColor: "#1a1a1a",
+        flexDirection: isMobile ? "column" : "row",
+        gap: isMobile ? 2 : 0,
+      }}>
+        <Typography
+          variant="h6"
+          fontWeight="bold"
+          color="white"
+          sx={{ fontSize: isMobile ? "16px" : "20px" }}
+        >
           Inventory / Products
         </Typography>
-        <Box>
+
+        {/* Filter & Add Button Container */}
+        <Box sx={{
+          display: "flex",
+          gap: isMobile ? 1 : 1,
+          flexWrap: isMobile ? "wrap" : "nowrap",
+          width: isMobile ? "100%" : "auto",
+        }}>
           <Button
             variant={statusFilter === "all" ? "contained" : "outlined"}
             onClick={() => handleFilterChange("all")}
-            sx={{ mr: 1 }}
+            size={isMobile ? "small" : "medium"}
+            sx={{ fontSize: isMobile ? "12px" : "14px", flex: isMobile ? "1 1 auto" : "auto" }}
           >
             All
           </Button>
           <Button
             variant={statusFilter === "active" ? "contained" : "outlined"}
             onClick={() => handleFilterChange("active")}
-            sx={{ mr: 1 }}
+            size={isMobile ? "small" : "medium"}
+            sx={{ fontSize: isMobile ? "12px" : "14px", flex: isMobile ? "1 1 auto" : "auto" }}
           >
             Active
           </Button>
           <Button
             variant={statusFilter === "paused" ? "contained" : "outlined"}
             onClick={() => handleFilterChange("paused")}
+            size={isMobile ? "small" : "medium"}
+            sx={{ fontSize: isMobile ? "12px" : "14px", flex: isMobile ? "1 1 auto" : "auto" }}
           >
             Paused
           </Button>
-          <Button variant="contained" sx={{ ml: 2 }} onClick={() => setOpenAddDialog(true)}>
-            + Add Product
+          <Button
+            variant="contained"
+            onClick={() => setOpenAddDialog(true)}
+            size={isMobile ? "small" : "medium"}
+            sx={{
+              fontSize: isMobile ? "12px" : "14px",
+              ml: isMobile ? 0 : 2,
+              flex: isMobile ? "1 1 100%" : "auto",
+            }}
+          >
+            {isMobile ? "+ Add" : "+ Add Product"}
           </Button>
         </Box>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2, mx: isMobile ? 2 : 0 }}>
+          {error}
+        </Alert>
+      )}
 
       {products.length === 0 ? (
-        <Typography color="text.secondary">No products found.</Typography>
+        <Typography color="text.secondary" sx={{ p: isMobile ? 2 : 4 }}>
+          No products found.
+        </Typography>
+      ) : isMobile ? (
+        /* Mobile Card View */
+        <Box sx={{ px: 2, pb: 3 }}>
+          {products.map((p) => (
+            <Card
+              key={p.id}
+              sx={{
+                mb: 2,
+                p: 2,
+                backgroundColor: "#f9f9f9",
+              }}
+            >
+              <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                <Avatar
+                  src={p.main_image || "/no-image.png"}
+                  variant="rounded"
+                  sx={{ width: 80, height: 80, flexShrink: 0 }}
+                />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="subtitle2" fontWeight="bold" noWrap>
+                    {p.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Stock: {p.stock_quantity ?? "-"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Status: {p.status === "out_of_stock" ? "Paused" : p.status}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    ${p.supplier_sold_price || "-"}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Typography variant="caption" sx={{ display: "block", mb: 1 }}>
+                {p.country || "-"} | {p.category || "-"}
+              </Typography>
+
+              {p.ebay_link && (
+                <Typography variant="caption" sx={{ display: "block", mb: 1 }}>
+                  <a
+                    href={
+                      p.ebay_link.startsWith("http://") || p.ebay_link.startsWith("https://")
+                        ? p.ebay_link
+                        : `https://${p.ebay_link}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#1976d2" }}
+                  >
+                    View eBay Link
+                  </a>
+                </Typography>
+              )}
+
+              <Box sx={{ display: "flex", gap: 1, justifyContent: "space-between", mt: 2 }}>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setSelectedProduct(p);
+                    setOpenPreviewDialog(true);
+                  }}
+                  sx={{ flex: 1 }}
+                >
+                  <VisibilityIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    setSelectedProduct(p);
+                    setNewProduct(p);
+                    setOpenEditDialog(true);
+                  }}
+                  sx={{ flex: 1 }}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={() => toggleStatus(p)}
+                  sx={{ flex: 1 }}
+                >
+                  {p.status === "active" ? (
+                    <PauseCircleOutlineIcon fontSize="small" />
+                  ) : (
+                    <PlayCircleOutlineIcon fontSize="small" />
+                  )}
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleDelete(p.id)}
+                  disabled={deletingId === p.id}
+                  sx={{ flex: 1 }}
+                >
+                  {deletingId === p.id ? <CircularProgress size={16} /> : <DeleteIcon fontSize="small" />}
+                </IconButton>
+              </Box>
+            </Card>
+          ))}
+        </Box>
       ) : (
+        /* Desktop Table View */
         <TableContainer component={Paper} sx={{ px: 8 }}>
           <Table>
-            <TableHead >
-              <TableRow >
+            <TableHead>
+              <TableRow>
                 <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Image</TableCell>
                 <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Title</TableCell>
                 <TableCell sx={{ fontSize: "17px", fontWeight: "bold" }}>Purchase Price + Tax</TableCell>
@@ -380,7 +515,6 @@ export default function InventorySection() {
             <TableBody>
               {products.map((p) => (
                 <TableRow key={p.id}>
-                  {/* Product Image */}
                   <TableCell>
                     <Avatar
                       src={p.main_image || "/no-image.png"}
@@ -388,20 +522,10 @@ export default function InventorySection() {
                       sx={{ width: 60, height: 60 }}
                     />
                   </TableCell>
-
-                  {/* Title */}
                   <TableCell>{p.title}</TableCell>
-
-                  {/* Purchase Price */}
                   <TableCell>${p.supplier_purchase_price || "-"}</TableCell>
-
-                  {/* Sold Price */}
                   <TableCell>${p.supplier_sold_price || "-"}</TableCell>
-
-                  {/* Country */}
                   <TableCell>{p.country || "-"}</TableCell>
-
-                  {/* eBay Link */}
                   <TableCell>
                     {p.ebay_link ? (
                       <a
@@ -419,26 +543,38 @@ export default function InventorySection() {
                       "-"
                     )}
                   </TableCell>
-
-
-                  {/* Stock Quantity */}
                   <TableCell>{p.stock_quantity ?? "-"}</TableCell>
-
-                  {/* Status */}
                   <TableCell>{p.status === "out_of_stock" ? "Paused" : p.status}</TableCell>
-
-                  {/* Actions */}
                   <TableCell>
-                    <IconButton onClick={() => { setSelectedProduct(p); setOpenPreviewDialog(true); }}>
+                    <IconButton
+                      onClick={() => {
+                        setSelectedProduct(p);
+                        setOpenPreviewDialog(true);
+                      }}
+                    >
                       <VisibilityIcon />
                     </IconButton>
-                    <IconButton onClick={() => { setSelectedProduct(p); setNewProduct(p); setOpenEditDialog(true); }}>
+                    <IconButton
+                      onClick={() => {
+                        setSelectedProduct(p);
+                        setNewProduct(p);
+                        setOpenEditDialog(true);
+                      }}
+                    >
                       <EditIcon />
                     </IconButton>
                     <IconButton onClick={() => toggleStatus(p)}>
-                      {p.status === "active" ? <PauseCircleOutlineIcon /> : <PlayCircleOutlineIcon />}
+                      {p.status === "active" ? (
+                        <PauseCircleOutlineIcon />
+                      ) : (
+                        <PlayCircleOutlineIcon />
+                      )}
                     </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(p.id)} disabled={deletingId === p.id}>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDelete(p.id)}
+                      disabled={deletingId === p.id}
+                    >
                       {deletingId === p.id ? <CircularProgress size={20} /> : <DeleteIcon />}
                     </IconButton>
                   </TableCell>
@@ -447,11 +583,18 @@ export default function InventorySection() {
             </TableBody>
           </Table>
         </TableContainer>
-
       )}
 
       {/* Add / Edit Product Dialog */}
-      <Dialog open={openAddDialog || openEditDialog} onClose={() => { setOpenAddDialog(false); setOpenEditDialog(false); }} fullWidth maxWidth="md">
+      <Dialog
+        open={openAddDialog || openEditDialog}
+        onClose={() => {
+          setOpenAddDialog(false);
+          setOpenEditDialog(false);
+        }}
+        fullWidth
+        maxWidth={isMobile ? "sm" : "md"}
+      >
         <DialogTitle>{openAddDialog ? "Add New Product" : "Edit Product"}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={1}>
@@ -460,11 +603,12 @@ export default function InventorySection() {
                 key={field}
                 fullWidth
                 margin="dense"
-                label={field.replace("_", " ").toUpperCase()}
+                label={field.replace(/_/g, " ").toUpperCase()}
                 name={field}
                 value={newProduct[field] || ""}
                 onChange={handleChange}
                 required
+                size={isMobile ? "small" : "medium"}
               />
             ))}
 
@@ -473,12 +617,12 @@ export default function InventorySection() {
               select
               fullWidth
               margin="dense"
-              //label="CATEGORY"
               name="category"
               value={newProduct.category || ""}
               onChange={handleChange}
               SelectProps={{ native: true }}
               required
+              size={isMobile ? "small" : "medium"}
             >
               <option value="">Select Category</option>
               {["Electronics", "Fashion", "Home&Kitchen", "Health&Beauty", "Sports"].map((opt) => (
@@ -491,12 +635,12 @@ export default function InventorySection() {
               select
               fullWidth
               margin="dense"
-              //label="COUNTRY"
               name="country"
               value={newProduct.country || ""}
               onChange={handleChange}
               SelectProps={{ native: true }}
               required
+              size={isMobile ? "small" : "medium"}
             >
               <option value="">Select Country</option>
               {["USA", "UK", "Australia", "Germany", "Spain"].map((opt) => (
@@ -509,12 +653,12 @@ export default function InventorySection() {
               select
               fullWidth
               margin="dense"
-              // label="SOURCE"
               name="source_type"
               value={newProduct.source_type || ""}
               onChange={handleChange}
               SelectProps={{ native: true }}
               required
+              size={isMobile ? "small" : "medium"}
             >
               <option value="">Select Source</option>
               {["Local", "Ali Baba", "Ali Express", "Others"].map((opt) => (
@@ -524,14 +668,20 @@ export default function InventorySection() {
 
             {/* Main Image */}
             <Box>
-              <Typography variant="body2" sx={{ mb: 0.5 }}>Main Image</Typography>
+              <Typography variant={isMobile ? "caption" : "body2"} sx={{ mb: 0.5 }}>
+                Main Image
+              </Typography>
               <input type="file" onChange={onMainImageChange} required />
-              {mainImageFile && <Typography variant="caption">{mainImageFile.name}</Typography>}
+              {mainImageFile && (
+                <Typography variant="caption">{mainImageFile.name}</Typography>
+              )}
             </Box>
 
             {/* Other Images */}
             <Box>
-              <Typography variant="body2" sx={{ mb: 0.5 }}>Other Images</Typography>
+              <Typography variant={isMobile ? "caption" : "body2"} sx={{ mb: 0.5 }}>
+                Other Images
+              </Typography>
               <input
                 ref={otherImagesInputRef}
                 type="file"
@@ -539,41 +689,88 @@ export default function InventorySection() {
                 accept="image/*"
                 onChange={onOtherImagesChange}
               />
-              {otherImageFiles.length > 0 && <Typography variant="caption">{otherImageFiles.length} files selected</Typography>}
+              {otherImageFiles.length > 0 && (
+                <Typography variant="caption">{otherImageFiles.length} files selected</Typography>
+              )}
             </Box>
           </Stack>
-
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => { setOpenAddDialog(false); setOpenEditDialog(false); }} disabled={saving}>Cancel</Button>
-          <Button variant="contained" onClick={() => handleSaveProduct(openEditDialog)} disabled={saving}>
+          <Button
+            onClick={() => {
+              setOpenAddDialog(false);
+              setOpenEditDialog(false);
+            }}
+            disabled={saving}
+            size={isMobile ? "small" : "medium"}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => handleSaveProduct(openEditDialog)}
+            disabled={saving}
+            size={isMobile ? "small" : "medium"}
+          >
             {saving ? <CircularProgress size={18} /> : "Save"}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Preview Product Dialog */}
-      <Dialog open={openPreviewDialog} onClose={() => setOpenPreviewDialog(false)} fullWidth maxWidth="md">
+      <Dialog
+        open={openPreviewDialog}
+        onClose={() => setOpenPreviewDialog(false)}
+        fullWidth
+        maxWidth={isMobile ? "sm" : "md"}
+      >
         <DialogTitle>Product Preview</DialogTitle>
         <DialogContent dividers>
           {selectedProduct && (
             <Stack spacing={1}>
-              <Typography variant="h6">{selectedProduct.title}</Typography>
-              <Typography>Price: ${selectedProduct.supplier_sold_price}</Typography>
-              <Typography>Stock: {selectedProduct.stock_quantity}</Typography>
-              <Typography>Status: {selectedProduct.status}</Typography>
-              <Typography>Category: {selectedProduct.category}</Typography>
-              <Typography>Country: {selectedProduct.country}</Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+              <Typography variant="h6" sx={{ fontSize: isMobile ? "16px" : "inherit" }}>
+                {selectedProduct.title}
+              </Typography>
+              <Typography variant={isMobile ? "caption" : "body2"}>
+                Price: ${selectedProduct.supplier_sold_price}
+              </Typography>
+              <Typography variant={isMobile ? "caption" : "body2"}>
+                Stock: {selectedProduct.stock_quantity}
+              </Typography>
+              <Typography variant={isMobile ? "caption" : "body2"}>
+                Status: {selectedProduct.status}
+              </Typography>
+              <Typography variant={isMobile ? "caption" : "body2"}>
+                Category: {selectedProduct.category}
+              </Typography>
+              <Typography variant={isMobile ? "caption" : "body2"}>
+                Country: {selectedProduct.country}
+              </Typography>
+              <Box sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1,
+                mt: 1,
+              }}>
                 {selectedProduct.images?.map((img) => (
-                  <Avatar key={img.id} src={img.image_url} variant="rounded" sx={{ width: 100, height: 100 }} />
+                  <Avatar
+                    key={img.id}
+                    src={img.image_url}
+                    variant="rounded"
+                    sx={{
+                      width: isMobile ? 70 : 100,
+                      height: isMobile ? 70 : 100,
+                    }}
+                  />
                 ))}
               </Box>
             </Stack>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenPreviewDialog(false)}>Close</Button>
+          <Button onClick={() => setOpenPreviewDialog(false)} size={isMobile ? "small" : "medium"}>
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -584,17 +781,28 @@ export default function InventorySection() {
         maxWidth="xs"
         fullWidth
         PaperProps={{
-          sx: { textAlign: "center", p: 2, borderRadius: 3 },
+          sx: { textAlign: "center", p: isMobile ? 1.5 : 2, borderRadius: 3 },
         }}
       >
-        <DialogTitle sx={{ fontWeight: "bold", color: "error.main" }}>Limit Reached</DialogTitle>
+        <DialogTitle sx={{ fontWeight: "bold", color: "error.main", fontSize: isMobile ? "16px" : "inherit" }}>
+          Limit Reached
+        </DialogTitle>
         <DialogContent>
-          <Typography variant="body1" sx={{ mt: 1 }}>
+          <Typography variant={isMobile ? "caption" : "body1"} sx={{ mt: 1 }}>
             {limitMessage || "Your product limit has been reached. Please upgrade your plan."}
           </Typography>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: "center", gap: 2 }}>
-          <Button variant="outlined" onClick={() => setOpenLimitDialog(false)}>
+        <DialogActions sx={{
+          justifyContent: "center",
+          gap: 1,
+          flexDirection: isMobile ? "column" : "row",
+        }}>
+          <Button
+            variant="outlined"
+            onClick={() => setOpenLimitDialog(false)}
+            size={isMobile ? "small" : "medium"}
+            fullWidth={isMobile}
+          >
             Close
           </Button>
           <Button
@@ -604,6 +812,8 @@ export default function InventorySection() {
               setOpenLimitDialog(false);
               window.location.href = "/upgrade";
             }}
+            size={isMobile ? "small" : "medium"}
+            fullWidth={isMobile}
           >
             Upgrade Plan
           </Button>
@@ -625,6 +835,7 @@ export default function InventorySection() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
       {/* 🔔 Validation Limit Snackbar */}
       <Snackbar
         open={limitSnackbar.open}
@@ -636,8 +847,6 @@ export default function InventorySection() {
           {limitSnackbar.message}
         </Alert>
       </Snackbar>
-
     </Box>
-
   );
 }

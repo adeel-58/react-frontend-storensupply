@@ -131,34 +131,97 @@ export default function SellerProfile() {
     return <Typography variant="h6" align="center" sx={{ mt: 4 }}>Loading profile...</Typography>;
 
   return (
-    <Box sx={{ pb: 10, mb: 0, mx: 0, pt: 6, px: 39, pt: 8, bgcolor: "#fff", borderRadius: 2, boxShadow: 1 }}>
-      <Typography variant="h5" gutterBottom sx={{ fontSize: "35px", fontWeight: "600" }}>
+    <Box
+      sx={{
+        pb: 10,
+        width:"100%",
+        minHeight: "100vh",
+        mb: 0,
+        mx: { xs: 0, sm: 3, md: 0 }, // mobile horizontal margin
+        pt: { xs: 4, sm: 6, md: 8 }, // mobile top padding
+        px: { xs: 2, sm: 3, md: 39 }, // mobile horizontal padding
+        bgcolor: "#fff",
+        borderRadius: 0,
+        boxShadow: 0,
+      }}
+    >
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{
+          fontSize: { xs: "24px", sm: "28px", md: "35px" }, // responsive heading
+          fontWeight: "600",
+        }}
+      >
         Seller Profile
       </Typography>
+
       <Box sx={{ mt: 5, mb: 1 }}>
-        <Grid container spacing={20}>
+        <Grid container spacing={{ xs: 4, md: 20 }}>
           {/* Left Column: Name & Email */}
           <Grid item xs={12} md={6}>
             <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ fontSize: "17px", fontWeight: "500" }}>Name:</Typography>
-              <Typography sx={{ fontSize: "18px", fontWeight: "600", color: "#D4AF37" }}>{user.username}</Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontSize: { xs: "14px", md: "17px" },
+                  fontWeight: "500",
+                }}
+              >
+                Name:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: { xs: "16px", md: "18px" },
+                  fontWeight: "600",
+                  color: "#D4AF37",
+                }}
+              >
+                {user.username}
+              </Typography>
             </Box>
+
             <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ fontSize: "17px", fontWeight: "500" }}>Email:</Typography>
-              <Typography sx={{ fontSize: "18px", fontWeight: "600", color: "#D4AF37" }}>{user.email}</Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontSize: { xs: "14px", md: "17px" },
+                  fontWeight: "500",
+                }}
+              >
+                Email:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: { xs: "16px", md: "18px" },
+                  fontWeight: "600",
+                  color: "#D4AF37",
+                }}
+              >
+                {user.email}
+              </Typography>
             </Box>
           </Grid>
 
           {/* Right Column: WhatsApp & Location */}
           <Grid item xs={12} md={6}>
             <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ fontSize: "17px", fontWeight: "500" }}>Contact (WhatsApp):</Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontSize: { xs: "14px", md: "17px" },
+                  fontWeight: "500",
+                }}
+              >
+                Contact (WhatsApp):
+              </Typography>
               {editingWhatsapp ? (
-                <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, mt: 0.5 }}>
                   <TextField
                     size="small"
                     value={whatsapp}
                     onChange={(e) => setWhatsapp(e.target.value)}
+                    fullWidth
                   />
                   <Button size="small" variant="contained" onClick={handleWhatsappUpdate}>
                     Save
@@ -168,8 +231,16 @@ export default function SellerProfile() {
                   </Button>
                 </Box>
               ) : (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                  <Typography sx={{ fontSize: "18px", fontWeight: "600", color: "#D4AF37" }}>{user.whatsapp_number || "Not Provided"}</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5, flexWrap: "wrap" }}>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: "16px", md: "18px" },
+                      fontWeight: "600",
+                      color: "#D4AF37",
+                    }}
+                  >
+                    {user.whatsapp_number || "Not Provided"}
+                  </Typography>
                   <IconButton size="small" onClick={() => setEditingWhatsapp(true)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
@@ -178,13 +249,22 @@ export default function SellerProfile() {
             </Box>
 
             <Box sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ fontSize: "17px", fontWeight: "500" }}>Location:</Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontSize: { xs: "14px", md: "17px" },
+                  fontWeight: "500",
+                }}
+              >
+                Location:
+              </Typography>
               {editingLocation ? (
-                <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1, mt: 0.5 }}>
                   <TextField
                     size="small"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
+                    fullWidth
                   />
                   <Button size="small" variant="contained" onClick={handleLocationUpdate}>
                     Save
@@ -194,8 +274,16 @@ export default function SellerProfile() {
                   </Button>
                 </Box>
               ) : (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                  <Typography sx={{ fontSize: "18px", fontWeight: "600", color: "#D4AF37" }}>{user.sellerProfile.location || "Not Provided"}</Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5, flexWrap: "wrap" }}>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: "16px", md: "18px" },
+                      fontWeight: "600",
+                      color: "#D4AF37",
+                    }}
+                  >
+                    {user.sellerProfile.location || "Not Provided"}
+                  </Typography>
                   <IconButton size="small" onClick={() => setEditingLocation(true)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
@@ -204,96 +292,58 @@ export default function SellerProfile() {
             </Box>
           </Grid>
         </Grid>
-
       </Box>
 
-      {/* Divider */}
-
-
       {/* Change Password */}
-      {/* Change Password */}
-<Typography variant="h6" gutterBottom sx={{ fontSize: "17px" }}>
-  Change Password
-</Typography>
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{ fontSize: { xs: "15px", md: "17px" }, mt: 3 }}
+      >
+        Change Password
+      </Typography>
 
-<TextField
-  fullWidth
-  label="Old Password"
-  type={showOldPassword ? "text" : "password"}
-  margin="dense"
-  value={oldPassword}
-  onChange={(e) => setOldPassword(e.target.value)}
-  InputProps={{
-    sx: { height: 40, fontSize: 17, top: 7 },
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton
-          size="small"
-          onClick={() => setShowOldPassword(!showOldPassword)}
-        >
-          {showOldPassword ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-/>
+      {/* Password Fields */}
+      {[
+        { label: "Old Password", value: oldPassword, setValue: setOldPassword, show: showOldPassword, setShow: setShowOldPassword },
+        { label: "New Password", value: newPassword, setValue: setNewPassword, show: showNewPassword, setShow: setShowNewPassword },
+        { label: "Confirm New Password", value: confirmPassword, setValue: setConfirmPassword, show: showConfirmPassword, setShow: setShowConfirmPassword }
+      ].map((field, idx) => (
+        <TextField
+          key={idx}
+          fullWidth
+          label={field.label}
+          type={field.show ? "text" : "password"}
+          margin="dense"
+          value={field.value}
+          onChange={(e) => field.setValue(e.target.value)}
+          InputProps={{
+            sx: { height: 40, fontSize: { xs: "14px", md: 17 }, top: 7 },
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={() => field.setShow(!field.show)}
+                >
+                  {field.show ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      ))}
 
-<TextField
-  fullWidth
-  label="New Password"
-  type={showNewPassword ? "text" : "password"}
-  margin="dense"
-  value={newPassword}
-  onChange={(e) => setNewPassword(e.target.value)}
-  InputProps={{
-    sx: { height: 40, fontSize: 17, top: 7 },
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton
-          size="small"
-          onClick={() => setShowNewPassword(!showNewPassword)}
-        >
-          {showNewPassword ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-/>
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ mt: 4, width: { xs: "100%", sm: "auto" } }}
+        onClick={handlePasswordChange}
+        disabled={loading}
+      >
+        Change Password
+      </Button>
 
-<TextField
-  fullWidth
-  label="Confirm New Password"
-  type={showConfirmPassword ? "text" : "password"}
-  margin="dense"
-  value={confirmPassword}
-  onChange={(e) => setConfirmPassword(e.target.value)}
-  InputProps={{
-    sx: { height: 40, fontSize: 17, top: 7 },
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton
-          size="small"
-          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-        >
-          {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-/>
-
-<Button
-  variant="contained"
-  color="primary"
-  sx={{ mt: 4 }}
-  onClick={handlePasswordChange}
-  disabled={loading}
->
-  Change Password
-</Button>
-
-
-      {/* Snackbar */}
+      {/* Snackbar & Loader */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={3000}
@@ -305,7 +355,6 @@ export default function SellerProfile() {
         </Alert>
       </Snackbar>
 
-      {/* Loader */}
       <Backdrop
         open={loading}
         sx={{
@@ -318,5 +367,6 @@ export default function SellerProfile() {
         <Typography sx={{ mt: 2 }}>Processing...</Typography>
       </Backdrop>
     </Box>
+
   );
 }

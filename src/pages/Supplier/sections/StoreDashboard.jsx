@@ -17,6 +17,8 @@ import {
   TableRow,
   Paper,
   Chip,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   Inventory2,
@@ -59,6 +61,10 @@ const COLORS = ["#00C49F", "#FF8042", "#1976d2", "#6d4c41", "#2e7d32"];
  * - Products with No Sales
  */
 export default function SupplierDashboard() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+
   // ------------- State -------------
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -79,7 +85,6 @@ export default function SupplierDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [allSalesTrend, setAllSalesTrend] = useState([]);
-  //const [salesTrend, setSalesTrend] = useState([]);      
   const [salesFilter, setSalesFilter] = useState("7days");
 
 
@@ -107,7 +112,7 @@ export default function SupplierDashboard() {
         }));
 
     } else if (filter === "daily") {
-      // today’s sales
+      // today's sales
       filtered = data
         .filter(item => new Date(item.date).toDateString() === now.toDateString())
         .map(item => ({
@@ -270,27 +275,30 @@ export default function SupplierDashboard() {
   };
   // ------------- Render -------------
   return (
-    <Box p={0} sx={{ px: 0 }}>
+    <Box p={0} sx={{ px: 0, bgcolor: "white", border: "1px solid transparent" }}>
+
+
       {/* Header */}
       <Box
         sx={{
-          height: 45,
+          height: isMobile ? "auto" : 45,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           bgcolor: "#D4AF37",
           mt: 0,
-          gap: 5, // spacing between items
-          flexWrap: "wrap", // wrap if screen is small
+          gap: isMobile ? 2 : 5,
+          flexWrap: "wrap",
+          p: isMobile ? 2 : 0,
         }}
       >
-        <Typography variant="body2" color="black" >
+        <Typography variant={isMobile ? "caption" : "body2"} color="black">
           Active Plan: <strong>{stats.planName}</strong> | Upload Limit: <strong>{stats.uploadLimit}</strong>
         </Typography>
 
         {/* Inline Warning if product limit reaches 80% */}
         {stats.totalProducts / stats.uploadLimit >= 0.8 && (
-          <Typography variant="body2" color="error" sx={{ fontWeight: "bold" }}>
+          <Typography variant={isMobile ? "caption" : "body2"} color="error" sx={{ fontWeight: "bold" }}>
             You have used {Math.round((stats.totalProducts / stats.uploadLimit) * 100)}% of your product limit.{" "}
             <Link
               to="/plans"
@@ -302,67 +310,67 @@ export default function SupplierDashboard() {
         )}
       </Box>
 
-
-
       {/* KPI Row */}
       <Box
         sx={{
           width: "100%",
-          height: 130,
+          minHeight: isMobile ? "auto" : 130,
           bgcolor: "#1a1a1a",
           color: "#fff",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-around",
+          justifyContent: isMobile ? "flex-start" : "space-around",
           borderRadius: 0,
-          p: 3,
+          p: isMobile ? 2 : 3,
+          flexWrap: isMobile ? "wrap" : "nowrap",
+          gap: isMobile ? 2 : 0,
         }}
       >
-        <Box textAlign="center">
-          <Typography variant="body2">TOTAL PRODUCTS</Typography>
-          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37" }}>{stats.totalProducts}</Typography>
+        <Box textAlign="center" sx={{ flex: isMobile ? "1 1 48%" : "auto", minWidth: isMobile ? "auto" : 0 }}>
+          <Typography variant="body2" sx={{ fontSize: isMobile ? "10px" : "inherit" }}>TOTAL PRODUCTS</Typography>
+          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37", fontSize: isMobile ? "18px" : "inherit" }}>{stats.totalProducts}</Typography>
         </Box>
 
-        <Box textAlign="center">
-          <Typography variant="body2">PROFIT MARGIN (LAST 30 DAYS)</Typography>
-          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37" }}>
+        <Box textAlign="center" sx={{ flex: isMobile ? "1 1 48%" : "auto", minWidth: isMobile ? "auto" : 0 }}>
+          <Typography variant="body2" sx={{ fontSize: isMobile ? "10px" : "inherit" }}>PROFIT MARGIN (LAST 30 DAYS)</Typography>
+          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37", fontSize: isMobile ? "18px" : "inherit" }}>
             {calculatePM(stats.totalProfit, stats.totalSales)}
           </Typography>
         </Box>
 
-        <Box textAlign="center">
-          <Typography variant="body2">TOTAL SALES (LAST 30 DAYS)</Typography>
-          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37" }}>{currency(stats.totalSales)}</Typography>
+        <Box textAlign="center" sx={{ flex: isMobile ? "1 1 48%" : "auto", minWidth: isMobile ? "auto" : 0 }}>
+          <Typography variant="body2" sx={{ fontSize: isMobile ? "10px" : "inherit" }}>TOTAL SALES (LAST 30 DAYS)</Typography>
+          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37", fontSize: isMobile ? "18px" : "inherit" }}>{currency(stats.totalSales)}</Typography>
         </Box>
 
-        <Box textAlign="center">
-          <Typography variant="body2">NET PROFIT (LAST 30 DAYS)</Typography>
-          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37" }}>{currency(stats.totalProfit)}</Typography>
+        <Box textAlign="center" sx={{ flex: isMobile ? "1 1 48%" : "auto", minWidth: isMobile ? "auto" : 0 }}>
+          <Typography variant="body2" sx={{ fontSize: isMobile ? "10px" : "inherit" }}>NET PROFIT (LAST 30 DAYS)</Typography>
+          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37", fontSize: isMobile ? "18px" : "inherit" }}>{currency(stats.totalProfit)}</Typography>
         </Box>
 
-        <Box textAlign="center">
-          <Typography variant="body2">INVENTORY VALUE</Typography>
-          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37" }}>{currency(stats.inventoryValue)}</Typography>
+        <Box textAlign="center" sx={{ flex: isMobile ? "1 1 48%" : "auto", minWidth: isMobile ? "auto" : 0 }}>
+          <Typography variant="body2" sx={{ fontSize: isMobile ? "10px" : "inherit" }}>INVENTORY VALUE</Typography>
+          <Typography variant="h6" fontWeight="bold" sx={{ color: "#D4AF37", fontSize: isMobile ? "18px" : "inherit" }}>{currency(stats.inventoryValue)}</Typography>
         </Box>
       </Box>
 
-      <Box sx={{ px: 17, pt: 13, pb: 5, }}>
-        <Grid container spacing={3}  >
+      <Box sx={{ px: isMobile ? 2 : 17, pt: isMobile ? 4 : 13, pb: 5 }}>
+        <Grid container spacing={3} sx={{ display: "flex" }}>
           {/* LEFT COLUMN */}
-          <Grid item xs={12} md={6} sx={{ width: "40%" }}  >
-            <Stack spacing={3}>
+          <Grid item xs={12} md={6} sx={{ width: isMobile ? "100%" : "40%", display: "flex" }}>
+            <Stack spacing={3} sx={{ width: "100%" }}>
               {/* Wrapper to handle badge + card */}
-              <Box sx={{ position: "relative", display: "inline-block" }}>
+              <Box sx={{ position: "relative", display: "inline-block", width: "100%" }}>
                 {/* Badge outside the card */}
                 <Box
                   component="img"
                   src="/highest-margin.png"
                   alt="Highest Margin Product"
                   sx={{
-                    width: 150,
+                    width: isMobile ? 80 : 150,
                     position: "absolute",
-                    top: -60,
-                    left: -60,
+                    top: isMobile ? -20 : -60,
+                    left: isMobile ? -20 : -60,
                     zIndex: 10,
                     pointerEvents: "none",
                   }}
@@ -370,11 +378,10 @@ export default function SupplierDashboard() {
                 {/* Card */}
                 <Card
                   sx={{
-                    height: 500,
+                    height: isMobile ? 330 : 500,
+                    
                     position: "relative",
-                    overflow: "hidden", // ✅ Allow border radius properly
-                    //borderRadius: 3,
-                    // boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                    overflow: "hidden",
                   }}
                 >
                   {profitInsights?.highestMargin ? (
@@ -393,7 +400,7 @@ export default function SupplierDashboard() {
                       <Box
                         sx={{
                           position: "absolute",
-                          height: 120,
+                          height: isMobile ? 100 : 130,
                           bottom: 0,
                           width: "100%",
                           bgcolor: "#d4af3788",
@@ -403,10 +410,10 @@ export default function SupplierDashboard() {
                           backdropFilter: "blur(4px)",
                         }}
                       >
-                        <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: "24px" }}>
+                        <Typography variant="subtitle1" fontWeight="bold" sx={{ fontSize: isMobile ? "16px" : "24px" }}>
                           {profitInsights.highestMargin.title}
                         </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.9, fontSize: "17px" }}>
+                        <Typography variant="body2" sx={{ opacity: 0.9, fontSize: isMobile ? "12px" : "17px" }}>
                           {profitInsights.highestMargin.margin_percent}% margin
                         </Typography>
                       </Box>
@@ -422,13 +429,10 @@ export default function SupplierDashboard() {
           </Grid>
 
           {/* RIGHT COLUMN */}
-          <Grid item xs={12} md={6} sx={{ width: "57%" }}>
-            <Stack spacing={3}>
+          <Grid item xs={12} md={6} sx={{ width: isMobile ? "100%" : "57%", display: "flex" }}>
+            <Stack spacing={3} sx={{ width: "100%" }}>
 
               {/* Sales Trend Chart */}
-
-
-
               <Card sx={{ height: 240, position: "relative" }}>
                 <CardContent sx={{ height: "100%", position: "relative" }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
@@ -480,16 +484,21 @@ export default function SupplierDashboard() {
 
 
               {/* Best Selling Products Chart */}
-              <Card sx={{ height: 240 }}>
-                <CardContent sx={{ height: "100%" }}>
-                  <Typography variant="h6" fontWeight="bold">Top 5 Best-Selling Products</Typography>
+              <Card sx={{ height: isMobile ? 300 : 240 }}>
+                <CardContent sx={{ height: "100%", p: isMobile ? 1.5 : 2 }}>
+                  <Typography variant="h6" fontWeight="bold" >Top 5 Best-Selling Products</Typography>
                   <Box sx={{ height: "100%" }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={topProducts} layout="vertical">
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" style={{ fontSize: "14px" }} />
-                        <YAxis dataKey="title" type="category" width={100} style={{ fontSize: "14px" }} />
-                        <ReTooltip />
+                        <XAxis type="number" style={{ fontSize: isMobile ? "10px" : "14px" }} />
+                        <YAxis 
+                          dataKey="title" 
+                          type="category" 
+                          width={isMobile ? 60 : 100} 
+                          style={{ fontSize: isMobile ? "10px" : "14px" }} 
+                        />
+                        <ReTooltip contentStyle={{ fontSize: isMobile ? "10px" : "12px" }} />
                         <Bar dataKey="total_quantity" fill="#D4AF37" />
                       </BarChart>
                     </ResponsiveContainer>
@@ -502,14 +511,14 @@ export default function SupplierDashboard() {
         </Grid>
       </Box>
 
-      <Grid item xs={12} mt={1} sx={{ width: "100%" }}>
+      <Grid item xs={12} mt={1} sx={{ width: "100%", px: isMobile ? 2 : 0 }}>
         <Grid container spacing={3}>
-          {/* inventtory overview card */}
+          {/* inventory overview card */}
           <Card sx={{ width: "100%" }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight="bold">Inventory Overview</Typography>
+            <CardContent sx={{ p: isMobile ? 1.5 : 2 }}>
+              <Typography variant="h6" fontWeight="bold" >Inventory Overview</Typography>
               {inventory.length === 0 ? (
-                <Typography color="text.secondary" mt={2}>No inventory data</Typography>
+                <Typography color="text.secondary" mt={2} sx={{ fontSize: isMobile ? "12px" : "inherit" }}>No inventory data</Typography>
               ) : (
                 <TableContainer sx={{ maxHeight: 350 }}>
                   <Table
@@ -517,18 +526,20 @@ export default function SupplierDashboard() {
                     stickyHeader
                     sx={{
                       borderCollapse: "separate",
-                      borderSpacing: "0 8px", // spacing between rows
+                      borderSpacing: "0 8px",
                       "& .MuiTableCell-root": {
-                        borderBottom: "none", // remove bottom line
+                        borderBottom: "none",
+                        fontSize: isMobile ? "12px" : "inherit",
+                        p: isMobile ? 1 : 1.5,
                       },
                     }}
                   >
                     <TableHead>
                       <TableRow>
-                        <TableCell><strong>Product</strong></TableCell>
-                        <TableCell align="right"><strong>Stock</strong></TableCell>
-                        <TableCell align="right"><strong>Unit Cost</strong></TableCell>
-                        <TableCell><strong>Status</strong></TableCell>
+                        <TableCell sx={{ fontSize: isMobile ? "11px" : "inherit" }}><strong>Product</strong></TableCell>
+                        <TableCell align="right" sx={{ fontSize: isMobile ? "11px" : "inherit" }}><strong>Stock</strong></TableCell>
+                        <TableCell align="right" sx={{ fontSize: isMobile ? "11px" : "inherit" }}><strong>Unit Cost</strong></TableCell>
+                        <TableCell sx={{ fontSize: isMobile ? "11px" : "inherit" }}><strong>Status</strong></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -537,12 +548,11 @@ export default function SupplierDashboard() {
                           key={item.id}
                           sx={{
                             backgroundColor: "#f9f9f9",
-                            //borderRadius: 2,
                           }}
                         >
-                          <TableCell>{item.title}</TableCell>
-                          <TableCell align="right">{item.stock_quantity}</TableCell>
-                          <TableCell align="right">{currency(item.supplier_purchase_price)}</TableCell>
+                          <TableCell sx={{ fontSize: isMobile ? "12px" : "inherit" }}>{item.title}</TableCell>
+                          <TableCell align="right" sx={{ fontSize: isMobile ? "12px" : "inherit" }}>{item.stock_quantity}</TableCell>
+                          <TableCell align="right" sx={{ fontSize: isMobile ? "12px" : "inherit" }}>{currency(item.supplier_purchase_price)}</TableCell>
                           <TableCell>
                             <Chip
                               label={item.stock_status}
@@ -558,6 +568,7 @@ export default function SupplierDashboard() {
                                 fontWeight: "bold",
                                 textTransform: "uppercase",
                                 letterSpacing: "0.5px",
+                                fontSize: isMobile ? "10px" : "inherit",
                               }}
                             />
                           </TableCell>
@@ -573,35 +584,35 @@ export default function SupplierDashboard() {
         </Grid>
       </Grid>
 
-
-      <Grid container mt={4} mb={5} justifyContent="center">
+      <Grid container mt={4} mb={5} justifyContent="center" sx={{ px: isMobile ? 2 : 0 }}>
         <Grid item xs={12}>
           <Box
             display="flex"
             gap={2}
             justifyContent="center"
             sx={{
-              px: 4, // padding left-right
-              pt: 2  // padding top
+              flexDirection: isMobile ? "column" : "row",
+              px: isMobile ? 0 : 4,
+              pt: 2,
             }}
           >
 
             {/* Low Stock */}
-            <Card sx={{ flex: 1, width: 580 }}>
-              <CardContent>
-                <Typography variant="h6" fontWeight="bold" sx={{ color: "#1a1a1a" }}>
-                  ⚠️ Low Stock (&lt; 5 units)
+            <Card sx={{ flex: 1, width: isMobile ? "100%" : 880 }}>
+              <CardContent sx={{ p: isMobile ? 1.5 : 2 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  Low Stock (&lt; 5 units)
                 </Typography>
                 {alerts.low_stock.length === 0 ? (
-                  <Typography sx={{ color: "gray", mt: 1 }}>All items well stocked</Typography>
+                  <Typography sx={{ color: "gray", mt: 1, fontSize: isMobile ? "12px" : "inherit" }}>All items well stocked</Typography>
                 ) : (
                   alerts.low_stock.map((item) => (
-                    <Box key={item.id} display="flex" justifyContent="space-between" mt={1}>
-                      <Typography sx={{ fontSize: 14 }}>{item.title}</Typography>
+                    <Box key={item.id} display="flex" justifyContent="space-between" mt={1} flexWrap="wrap" gap={1}>
+                      <Typography sx={{ fontSize: isMobile ? "12px" : 14 }}>{item.title}</Typography>
                       <Chip
                         label={`${item.stock_quantity} left`}
                         size="small"
-                        sx={{ backgroundColor: "black", color: "white", fontSize: 12 }}
+                        sx={{ backgroundColor: "black", color: "white", fontSize: isMobile ? "10px" : 12 }}
                       />
                     </Box>
                   ))
@@ -610,16 +621,16 @@ export default function SupplierDashboard() {
             </Card>
 
             {/* Out of Stock */}
-            <Card sx={{ flex: 1 }}>
-              <CardContent>
-                <Typography variant="h6" fontWeight="bold" sx={{ color: "#1a1a1a" }}>
-                  🚫 Out of Stock
+            <Card sx={{ flex: 1, width: isMobile ? "100%" : "auto" }}>
+              <CardContent sx={{ p: isMobile ? 1.5 : 2 }}>
+                <Typography variant="h6" fontWeight="bold" >
+                  Out of Stock
                 </Typography>
                 {alerts.out_of_stock.length === 0 ? (
-                  <Typography sx={{ color: "gray", mt: 1 }}>No items out of stock</Typography>
+                  <Typography sx={{ color: "gray", mt: 1, fontSize: isMobile ? "12px" : "inherit" }}>No items out of stock</Typography>
                 ) : (
                   alerts.out_of_stock.map((item) => (
-                    <Typography key={item.id} sx={{ mt: 1, fontSize: 14 }}>
+                    <Typography key={item.id} sx={{ mt: 1, fontSize: isMobile ? "12px" : 14 }}>
                       {item.title}
                     </Typography>
                   ))
@@ -628,21 +639,21 @@ export default function SupplierDashboard() {
             </Card>
 
             {/* Products with No Sales */}
-            <Card sx={{ flex: 1 }}>
-              <CardContent>
-                <Typography variant="h6" fontWeight="bold" sx={{ color: "#1a1a1a" }}>
-                  ⚠️ Products with No Sales
+            <Card sx={{ flex: 1, width: isMobile ? "100%" : "auto" }}>
+              <CardContent sx={{ p: isMobile ? 1.5 : 2 }}>
+                <Typography variant="h6" fontWeight="bold" >
+                  Products with No Sales
                 </Typography>
                 {profitInsights.noSales?.length === 0 ? (
-                  <Typography sx={{ color: "green", mt: 1 }}>✅ All products have sales</Typography>
+                  <Typography sx={{ color: "green", mt: 1, fontSize: isMobile ? "12px" : "inherit" }}>✅ All products have sales</Typography>
                 ) : (
                   profitInsights.noSales.map((item) => (
-                    <Box key={item.id} display="flex" justifyContent="space-between" mt={1}>
-                      <Typography sx={{ fontSize: 14 }}>{item.title}</Typography>
+                    <Box key={item.id} display="flex" justifyContent="space-between" mt={1} flexWrap="wrap" gap={1}>
+                      <Typography sx={{ fontSize: isMobile ? "12px" : 14 }}>{item.title}</Typography>
                       <Chip
                         label="0 sales"
                         size="small"
-                        sx={{ backgroundColor: "#f39c12", color: "white" }}
+                        sx={{ backgroundColor: "#f39c12", color: "white", fontSize: isMobile ? "10px" : "inherit" }}
                       />
                     </Box>
                   ))
@@ -654,8 +665,6 @@ export default function SupplierDashboard() {
         </Grid>
       </Grid>
 
-
     </Box>
   );
 }
-

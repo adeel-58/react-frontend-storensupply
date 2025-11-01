@@ -1,6 +1,19 @@
 // Plans.jsx
 import React from "react";
-import { Box, Grid, Card, CardContent, Typography, Button, Divider, List, ListItem, ListItemText } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 
 const supplierPlans = [
   {
@@ -52,35 +65,64 @@ const featureList = [
   "Custom Dashboard Layout"
 ];
 
-
-
 const Plans = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
-    <Box sx={{ py: 8, px: { xs: 2, md: 8 }, fontFamily: "Montserrat, sans-serif" }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 6, textAlign: "center", fontSize:"34px" }}>
+    <Box sx={{
+      py: isMobile ? 4 : 8,
+      px: isMobile ? 2 : { xs: 2, md: 8 },
+      fontFamily: "Montserrat, sans-serif"
+    }}>
+      <Typography variant="h4" sx={{
+        fontWeight: 700,
+        mb: isMobile ? 4 : 6,
+        textAlign: "center",
+        fontSize: isMobile ? "24px" : "34px"
+      }}>
         Supplier Plans
       </Typography>
-      <Grid container spacing={4} sx={{ justifyContent: "center" }}>
+
+      <Grid
+        container
+        spacing={isMobile ? 2 : 4}
+        sx={{
+          justifyContent: "center",
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "center" : "flex-start",
+        }}
+      >
         {supplierPlans.map((plan) => (
-          <Grid item key={plan.id} sx={{ width: 350 }}>
+          <Grid
+            item
+            key={plan.id}
+            sx={{
+              width: isMobile ? "100%" : 350,
+              maxWidth: isMobile ? "100%" : "350px",
+            }}
+          >
             <Card
               sx={{
                 textAlign: "center",
-                p: 3,
+                p: isMobile ? 2 : 3,
+                mt:{xs:3},
                 boxShadow: 3,
                 borderRadius: 3,
                 position: "relative",
                 overflow: "visible",
                 display: "flex",
                 flexDirection: "column",
+                height: "100%",
               }}
             >
+              {/* Price Circle */}
               <Box
                 sx={{
-                  width: 90,
-                  height: 90,
+                  width: isMobile ? 70 : 90,
+                  height: isMobile ? 70 : 90,
                   margin: "auto",
-                  mt: -6,
+                  mt: isMobile ? -4 : -6,
                   borderRadius: "50%",
                   background: gradient,
                   border: "5px solid #fff",
@@ -88,59 +130,103 @@ const Plans = () => {
                   alignItems: "center",
                   justifyContent: "center",
                   boxShadow: 3,
-                  
                 }}
               >
-                <Typography variant="h5" sx={{ color: "#fff", fontWeight: 700 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: isMobile ? "14px" : "inherit",
+                  }}
+                >
                   {plan.type === "free" ? "Free" : `$${plan.price}`}
                 </Typography>
               </Box>
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+
+              <CardContent sx={{
+                flexGrow: 1,
+                display: "flex",
+                flexDirection: "column",
+                p: isMobile ? 1.5 : 2,
+              }}>
+                {/* Plan Name */}
+                <Typography variant="h6" sx={{
+                  fontWeight: 600,
+                  mb: 1.5,
+                  fontSize: isMobile ? "18px" : "inherit",
+                }}>
                   {plan.name}
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 2 , fontSize:"18px"}}>
+
+                {/* Description */}
+                <Typography variant="body2" sx={{
+                  mb: isMobile ? 1.5 : 2,
+                  fontSize: isMobile ? "14px" : "18px",
+                }}>
                   {plan.description}
                 </Typography>
 
-                <List dense sx={{ textAlign: "center", mb: 2, px: 0, }}>
+                {/* Features List */}
+                <List dense sx={{
+                  textAlign: "center",
+                  mb: isMobile ? 1.5 : 2,
+                  px: 0,
+                }}>
                   {featureList.map((feature, idx) => (
-                    <ListItem key={idx} sx={{ py: 0.2 }}>
-                      <ListItemText  primary={feature.replace("best-selling products", `top ${plan.top_products} best-selling products`)} />
+                    <ListItem key={idx} sx={{ py: isMobile ? 0.1 : 0.2 }}>
+                      <ListItemText
+                        primary={feature.replace("best-selling products", `top ${plan.top_products} best-selling products`)}
+                        sx={{
+                          "& .MuiTypography-root": {
+                            fontSize: isMobile ? "11px" : "inherit",
+                          }
+                        }}
+                      />
                     </ListItem>
                   ))}
-
                 </List>
 
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: isMobile ? 1.5 : 2 }} />
 
-                <Typography variant="body2" sx={{ mb: 1 , fontWeight:"bold" }}>
+                {/* Upload Limit */}
+                <Typography variant="body2" sx={{
+                  mb: 0.5,
+                  fontWeight: "bold",
+                  fontSize: isMobile ? "12px" : "inherit",
+                }}>
                   Upload Limit: {plan.upload_limit}
                 </Typography>
-                <Typography variant="body2" sx={{ mb: 2 }}>
+
+                {/* Duration */}
+                <Typography variant="body2" sx={{
+                  mb: isMobile ? 2 : 2,
+                  fontSize: isMobile ? "12px" : "inherit",
+                }}>
                   Duration: {plan.duration_days} days
                 </Typography>
 
-
+                {/* Button */}
                 <Button
-  variant="contained"
-  color="primary"
-  sx={{ mr: 2, fontSize: "17px", fontWeight: 600 }}
-  onClick={() => {
-    if (plan.type === "paid") {
-      const phoneNumber = "+923338051097";
-      const message = encodeURIComponent(`I want to purchase the ${plan.name} plan`);
-      window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
-    }
-  }}
->
-  {plan.type === "free" ? "It's Free" : "Pay Now"}
-</Button>
-
-
-
-
-
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    fontSize: isMobile ? "14px" : "17px",
+                    fontWeight: 600,
+                    mt: "auto",
+                    width: isMobile ? "100%" : "auto",
+                    py: isMobile ? 0.8 : 1,
+                  }}
+                  onClick={() => {
+                    if (plan.type === "paid") {
+                      const phoneNumber = "+923338051097";
+                      const message = encodeURIComponent(`I want to purchase the ${plan.name} plan`);
+                      window.open(`https://wa.me/${phoneNumber}?text=${message}`, "_blank");
+                    }
+                  }}
+                >
+                  {plan.type === "free" ? "It's Free" : "Pay Now"}
+                </Button>
               </CardContent>
             </Card>
           </Grid>

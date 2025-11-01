@@ -5,7 +5,6 @@ import {
   Typography,
   Avatar,
   Paper,
-  Divider,
   CircularProgress,
   Button,
   Modal,
@@ -22,7 +21,6 @@ import { useAuth } from "../../context/AuthContext";
 import InventorySection from "./sections/InventorySection";
 import SalesSection from "./sections/SalesSection";
 import StoreDashboard from "./sections/StoreDashboard";
-import AnalyticsSection from "./sections/AnalyticsSection";
 
 const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const IMAGE_BASE = (import.meta.env.VITE_IMAGE_BASE_URL || "").replace(/\/$/, "");
@@ -30,11 +28,10 @@ const IMAGE_BASE = (import.meta.env.VITE_IMAGE_BASE_URL || "").replace(/\/$/, ""
 export default function SupplierDashboard() {
   const { user, setUser } = useAuth();
   const [supplier, setSupplier] = useState(user?.supplierProfile || null);
-  const [activeSection, setActiveSection] = useState("store-dashboard");
+  const [activeSection, setActiveSection] = useState("dashboard");
   const [loading, setLoading] = useState(!supplier);
   const [copied, setCopied] = useState(false);
 
-  // Edit modal state
   const [openEdit, setOpenEdit] = useState(false);
   const [form, setForm] = useState({
     store_name: "",
@@ -48,28 +45,17 @@ export default function SupplierDashboard() {
   const [message, setMessage] = useState(null);
   const fileInputRef = useRef();
 
-  // Build public logo URL from DB-stored path like "/uploads/products/19/file.jpg"
   const buildLogoUrl = (dbPath) => {
     if (!dbPath) return null;
-    // split and take last two segments: ["uploads","products","19","file.jpg"] -> ["19","file.jpg"]
     const parts = dbPath.split("/").filter(Boolean);
     const lastTwo = parts.slice(-2).join("/");
     if (IMAGE_BASE) return `${IMAGE_BASE}/${lastTwo}`;
-    // fallback: if stored path already full URL
     if (dbPath.startsWith("http")) return dbPath;
-    // last fallback uses relative path
     return dbPath;
   };
 
-  // Build public supplier link
-  const getPublicLink = () => {
-    if (supplier?.id) {
-      return `https://storensupply/supplier/${supplier.id}`;
-    }
-    return null;
-  };
+  const getPublicLink = () => (supplier?.id ? `https://storensupply/supplier/${supplier.id}` : null);
 
-  // Handle copy to clipboard
   const handleCopyLink = async () => {
     const link = getPublicLink();
     if (link) {
@@ -83,7 +69,6 @@ export default function SupplierDashboard() {
     }
   };
 
-  // Fetch supplier via /auth/verify (returns latest supplierProfile in token service)
   const fetchSupplier = async () => {
     try {
       setLoading(true);
@@ -117,7 +102,6 @@ export default function SupplierDashboard() {
   useEffect(() => {
     if (!supplier) fetchSupplier();
     else {
-      // keep preview consistent when supplier exists
       setLogoPreview(supplier.logo ? buildLogoUrl(supplier.logo) : null);
       setForm({
         store_name: supplier.store_name || "",
@@ -126,10 +110,8 @@ export default function SupplierDashboard() {
         country: supplier.country || "",
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // handle file select
   const onFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -141,7 +123,6 @@ export default function SupplierDashboard() {
   const handleOpenEdit = () => {
     setMessage(null);
     setOpenEdit(true);
-    // refresh form values from latest supplier
     if (supplier) {
       setForm({
         store_name: supplier.store_name || "",
@@ -155,7 +136,6 @@ export default function SupplierDashboard() {
   };
 
   const handleCloseEdit = () => {
-    // revoke preview url if it's from a local file
     if (logoFile && logoPreview) URL.revokeObjectURL(logoPreview);
     setLogoFile(null);
     setMessage(null);
@@ -178,7 +158,6 @@ export default function SupplierDashboard() {
       }
 
       const fd = new FormData();
-      // Only append fields present — backend ignores unspecified
       fd.append("store_name", form.store_name || "");
       fd.append("store_description", form.store_description || "");
       fd.append("whatsapp_number", form.whatsapp_number || "");
@@ -186,15 +165,11 @@ export default function SupplierDashboard() {
       if (logoFile) fd.append("logo", logoFile);
 
       const res = await axios.put(`${API_URL}/supplier/update`, fd, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
 
       if (res.data?.success) {
         setMessage({ type: "success", text: res.data.message || "Updated successfully." });
-        // refresh supplier state
         await fetchSupplier();
         setTimeout(() => {
           handleCloseEdit();
@@ -230,138 +205,150 @@ export default function SupplierDashboard() {
   }
 
   return (
-    <Box sx={{ maxWidth: "100%", mt: 0, mb: 0, boxShadow: 0 }}>
-      {/* Header Section with Logo and Info */}
-      <Paper sx={{ display: "flex", alignItems: "flex-start", p: 8, mb: 0, gap: 4 }}>
+    <Box sx={{ maxWidth: "100%", mt: 0, mb: 0, boxShadow: 0, bgcolor: "#fff" }}>
+      {/* Header Section */}
+      <Paper
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: "flex-start",
+          p: { xs: 3, md: 8 },
+          mb: 0,
+          gap: { xs: 2, md: 4 },
+        }}
+      >
         {/* Logo */}
         <Avatar
           src={logoPreview || "/default-avatar.png"}
           alt={supplier?.store_name}
-          sx={{ width: 180, height: 200, borderRadius: "12px", flexShrink: 0 }}
+          sx={{
+            width: { xs: 120, md: 180 },
+            height: { xs: 140, md: 200 },
+            borderRadius: "12px",
+            flexShrink: 0,
+            mb: { xs: 2, md: 0 },
+          }}
           variant="rounded"
         />
 
         {/* Store Info */}
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 120 }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            minHeight: 120,
+            width: "100%",
+          }}
+        >
           <Box>
-            <Typography variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              sx={{ mb: 1, fontSize: { xs: "1.4rem", md: "2rem" } }}
+            >
               {supplier?.store_name}
             </Typography>
-            <Typography color="text.secondary" sx={{ mb: 2, lineHeight: 1.6, width:"60%" }}>
+            <Typography
+              color="text.secondary"
+              sx={{
+                mb: 2,
+                lineHeight: 1.6,
+                width: { xs: "100%", md: "60%" },
+                fontSize: { xs: "0.875rem", md: "1rem" },
+              }}
+            >
               {supplier?.store_description || "No description"}
             </Typography>
           </Box>
 
           {/* Navigation Buttons */}
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            <Button
-              onClick={() => setActiveSection("store-dashboard")}
-              sx={{
-                bgcolor: activeSection === "store-dashboard" ? "#D4AF37" : "#E5C547",
-                color: "#000",
-                fontWeight: "bold",
-                width: 140,
-                height: 45,
-                "&:hover": {
-                  bgcolor: "#D4AF37",
-                },
-              }}
-            >
-              DASHBOARD
-            </Button>
-            <Button
-              onClick={() => setActiveSection("inventory")}
-              sx={{
-                bgcolor: activeSection === "inventory" ? "#D4AF37" : "#E5C547",
-                color: "#000",
-                fontWeight: "bold",
-                width: 140,
-                height: 45,
-                "&:hover": {
-                  bgcolor: "#D4AF37",
-                },
-              }}
-            >
-              INVENTORY
-            </Button>
-            <Button
-              onClick={() => setActiveSection("sales")}
-              sx={{
-                bgcolor: activeSection === "sales" ? "#D4AF37" : "#E5C547",
-                color: "#000",
-                fontWeight: "bold",
-                width: 140,
-                height: 45,
-                "&:hover": {
-                  bgcolor: "#D4AF37",
-                },
-              }}
-            >
-              SALES
-            </Button>
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: { xs: 2, md: 0 } }}>
+            {["dashboard", "inventory", "sales"].map((section) => (
+              <Button
+                key={section}
+                onClick={() => setActiveSection(section)}
+                sx={{
+                  bgcolor: activeSection === section ? "#D4AF37" : "#E5C547",
+                  color: "#000",
+                  fontWeight: "bold",
+                  width: { xs: "100%", sm: 140 },
+                  height: 45,
+                  "&:hover": { bgcolor: "#D4AF37" },
+                }}
+              >
+                {section.toUpperCase()}
+              </Button>
+            ))}
           </Box>
         </Box>
 
-        {/* Edit Button & Public Link - Top Right */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, textAlign: "right", alignItems: "flex-end" }}>
-          <Button 
+        {/* Edit & Public Link */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            textAlign: { xs: "center", md: "right" },
+            alignItems: { xs: "center", md: "flex-end" },
+            mt: { xs: 2, md: 0 },
+          }}
+        >
+          <Button
             variant="text"
-            startIcon={<Edit />} 
+            startIcon={<Edit />}
             onClick={handleOpenEdit}
-            sx={{ 
+            sx={{
               whiteSpace: "nowrap",
               textDecoration: "underline",
               color: "#000",
               fontWeight: "bold",
               fontSize: "1rem",
               textTransform: "none",
-              "&:hover": {
-                bgcolor: "transparent",
-                opacity: 0.7
-              }
+              "&:hover": { bgcolor: "transparent", opacity: 0.7 },
             }}
           >
             edit store
           </Button>
 
-          {/* Public Link with Copy Button */}
-          <Stack direction="row" alignItems="center" gap={1} sx={{ p: 1.5, borderRadius: 0, }}>
-            <Typography variant="caption" sx={{ color: "#666", fontWeight: "500", fontSize: "0.8rem" }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            gap={1}
+            sx={{
+              p: 1.5,
+              borderRadius: 0,
+              flexWrap: "wrap",
+              justifyContent: { xs: "center", md: "flex-end" },
+              wordBreak: "break-word",
+            }}
+          >
+            <Typography variant="caption" sx={{ color: "#666", fontWeight: "500" }}>
               Public link:
             </Typography>
-            <Typography 
-              variant="caption" 
-              sx={{ 
-                color: "#1976d2", 
-                fontSize: "15px",
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#1976d2",
+                fontSize: "0.8rem",
                 fontFamily: "monospace",
-                wordBreak: "break-all",
-                textDecoration:"underline"
+                textDecoration: "underline",
               }}
             >
               {getPublicLink()}
             </Typography>
             <Tooltip title={copied ? "Copied!" : "Copy link"} placement="top">
-              <IconButton 
-                size="small" 
-                onClick={handleCopyLink}
-                sx={{ p: 0.5, ml: 0.5 }}
-              >
-                {copied ? (
-                  <Check sx={{ fontSize: "1rem", color: "green" }} />
-                ) : (
-                  <ContentCopy sx={{ fontSize: "1rem" }} />
-                )}
+              <IconButton size="small" sx={{ p: 0.5 }} onClick={handleCopyLink}>
+                {copied ? <Check sx={{ color: "green" }} /> : <ContentCopy />}
               </IconButton>
             </Tooltip>
           </Stack>
         </Box>
       </Paper>
 
-     
-
-      {/* Dynamic Section Rendering */}
-      {activeSection === "store-dashboard" && <StoreDashboard />}
+      {/* Dynamic Sections */}
+      {activeSection === "dashboard" && <StoreDashboard />}
       {activeSection === "inventory" && <InventorySection />}
       {activeSection === "sales" && <SalesSection />}
 
@@ -373,7 +360,7 @@ export default function SupplierDashboard() {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 720,
+            width: { xs: "90%", md: 720 },
             bgcolor: "background.paper",
             boxShadow: 24,
             p: 3,
@@ -415,7 +402,7 @@ export default function SupplierDashboard() {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
                 <Button variant="contained" component="label">
                   Choose Logo
                   <input ref={fileInputRef} type="file" hidden accept="image/*" onChange={onFileChange} />
@@ -431,7 +418,7 @@ export default function SupplierDashboard() {
                 >
                   Reset
                 </Button>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ width: { xs: "100%", sm: "auto" } }}>
                   Logo optional — recommended &lt; 2MB
                 </Typography>
               </Stack>
@@ -440,7 +427,7 @@ export default function SupplierDashboard() {
             <Grid item xs={12}>
               {message && <Alert severity={message.type} sx={{ mb: 2 }}>{message.text}</Alert>}
 
-              <Stack direction="row" spacing={2}>
+              <Stack direction="row" spacing={2} flexWrap="wrap">
                 <Button variant="contained" startIcon={<Save />} onClick={handleSave} disabled={saving}>
                   {saving ? "Saving..." : "Save changes"}
                 </Button>

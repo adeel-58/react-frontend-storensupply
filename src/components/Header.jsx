@@ -15,41 +15,53 @@ import {
   Drawer,
   List,
   ListItemButton,
+  ListItemText,
   useMediaQuery,
 } from "@mui/material";
 import { styled, useTheme } from "@mui/material/styles";
-import loginSignupIcon from "/login_signup.png";
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import MenuIcon from "@mui/icons-material/Menu";
-//import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import whatsappIcon from "/whatsapp.png";
 import EmailIcon from "@mui/icons-material/Email";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useAuth } from "../context/AuthContext";
 import logo from "/logo_final.png";
-import { useLocation } from "react-router-dom";
+import whatsappIcon from "/whatsapp.png";
 import { useEffect } from "react";
-// Search bar styling
+
+// ✅ Search bar styling
 const SearchBox = styled("div")(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   backgroundColor: "white",
   padding: "4px 10px",
   borderRadius: "4px",
-  flex: 1,                   // ✅ allow it to grow
+  flex: 1,
   maxWidth: "350px",
-  //border: "1px solid #ccc",
   [theme.breakpoints.down("md")]: {
     display: "none",
   },
 }));
 
 export default function Header() {
-
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const [catAnchor, setCatAnchor] = useState(null);
+  const [userAnchor, setUserAnchor] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const categories = [
+    "Electronics",
+    "Fashion",
+    "Home&Kitchen",
+    "Health&Beauty",
+    "Sports",
+  ];
 
   const handleSearch = () => {
     if (searchText.trim()) {
@@ -57,26 +69,22 @@ export default function Header() {
     }
   };
 
-  // Optional: handle Enter key
   const handleKeyPress = (e) => {
     if (e.key === "Enter") handleSearch();
   };
-  const { user, logout } = useAuth();
-  const [catAnchor, setCatAnchor] = useState(null);
-  const [userAnchor, setUserAnchor] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  //const navigate = useNavigate();
+  useEffect(() => {
+    // clear search input after navigating away
+    setSearchText("");
+  }, [location.pathname]);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      {/* ✅ Top Bar (DISABLED ON MOBILE) */}
+      {/* ✅ Top Bar (hidden on mobile) */}
       {!isMobile && (
         <Box
           sx={{
             backgroundColor: "#D3AF37",
-            color: "#ffffffff",
+            color: "#1A1A1A",
             display: "flex",
             justifyContent: "space-between",
             px: 7,
@@ -84,11 +92,11 @@ export default function Header() {
             fontSize: "12px",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "#1A1A1A" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <img src={whatsappIcon} alt="WhatsApp" style={{ width: 18 }} />
             +92 333 8051097
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "#1A1A1A" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <EmailIcon fontSize="small" />
             contact.storensupply@gmail.com
           </Box>
@@ -96,8 +104,13 @@ export default function Header() {
       )}
 
       {/* ✅ Main Navbar */}
-      <AppBar position="static" elevation={0} sx={{ backgroundColor: "#1A1A1A", color: "black", py: 2, px: 4 }}>
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{ backgroundColor: "#1A1A1A", py: 2, px: 4 }}
+      >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+          {/* ✅ Left side: Logo & Search */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 6, flexGrow: 1 }}>
             <img
               src={logo}
@@ -106,29 +119,29 @@ export default function Header() {
               onClick={() => navigate("/")}
             />
 
-            {/* ✅ Search Bar moved here */}
+            {/* ✅ Search (hidden on mobile) */}
             <SearchBox>
               <InputBase
                 placeholder="Search products..."
                 sx={{ flex: 1, maxWidth: "350px" }}
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                onKeyPress={handleKeyPress} // Enter key triggers search
+                onKeyPress={handleKeyPress}
               />
               <SearchIcon sx={{ cursor: "pointer" }} onClick={handleSearch} />
             </SearchBox>
           </Box>
+
           {/* ✅ Right Side */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 4 }}>
-            {/* ✅ Mobile Menu Button (Right) */}
+            {/* ✅ Mobile Menu Button */}
             {isMobile ? (
-              <IconButton onClick={() => setDrawerOpen(true)}>
-                <MenuIcon />
+              <IconButton onClick={() => setDrawerOpen(true)} sx={{ color: "white", mt: 1, }}>
+                <MenuIcon sx={{ fontSize: 35 }} />
               </IconButton>
             ) : (
               <>
-                {/* Categories */}
-                {/* Categories */}
+                {/* ✅ Categories dropdown (desktop only) */}
                 <Button
                   sx={{
                     color: "white",
@@ -142,16 +155,17 @@ export default function Header() {
                 >
                   categories
                 </Button>
+
                 <Menu
                   anchorEl={catAnchor}
                   open={Boolean(catAnchor)}
                   onClose={() => setCatAnchor(null)}
                 >
-                  {["Electronics", "Fashion", "Home&Kitchen", "Health&Beauty", "Sports"].map((cat) => (
+                  {categories.map((cat) => (
                     <MenuItem
                       key={cat}
                       onClick={() => {
-                        setCatAnchor(null); // close menu
+                        setCatAnchor(null);
                         navigate(`/shop?category=${encodeURIComponent(cat)}`);
                       }}
                     >
@@ -160,19 +174,21 @@ export default function Header() {
                   ))}
                 </Menu>
 
-
-                {/* Switch to Supplier */}
+                {/* ✅ Switch to Supplier */}
                 {user && (
                   <Button
                     sx={{
-                      color: "white", fontWeight: 500, textTransform: "none", fontSize: "17px", textDecoration: "underline", textUnderlineOffset: "8px", backgroundColor: "transparent", textDecorationColor: "white",// no hover background
+                      color: "white",
+                      fontWeight: 500,
+                      textTransform: "none",
+                      fontSize: "17px",
+                      textDecoration: "underline",
+                      textUnderlineOffset: "8px",
+                      textDecorationColor: "white",
                       "&:hover": {
-                        backgroundColor: "transparent", // prevent yellow highlight
-                        // underline turns gold
-                        textDecoration: "underline",
                         textDecorationColor: "#D4AF37",
-                        color: "#D4AF37"
-                      }
+                        color: "#D4AF37",
+                      },
                     }}
                     onClick={() => navigate("/supplier-profile")}
                   >
@@ -180,100 +196,193 @@ export default function Header() {
                   </Button>
                 )}
 
-                {/* Authentication */}
+                {/* ✅ Auth Buttons */}
                 {!user ? (
                   <IconButton onClick={() => navigate("/login")}>
-                   
-                    <PersonOutlineIcon alt="Login/Signup" sx={{ width: 29, height: 29, color: "white" }} />
+                    <PersonOutlineIcon
+                      alt="Login/Signup"
+                      sx={{ width: 29, height: 29, color: "white" }}
+                    />
                   </IconButton>
                 ) : (
                   <>
-                    <Button onClick={(e) => setUserAnchor(e.currentTarget)} endIcon={<AccountCircle />} sx={{
-                      fontWeight: 600,
-                      fontSize: "17px",
-                      textTransform: "none",
-                      color: "#D4AF37",
-                      fontFamily: "open-sans, Arial, sans-serif",
-                      "& .MuiButton-endIcon": {
-                        marginLeft: "8px",
-                        "& svg": {
-                          fontSize: "32px !important", // ✅ force icon size
-                        },
-                      },
-                      "&:hover": {
-                        backgroundColor: "transparent"
-                      }
-                    }}>
+                    <Button
+                      onClick={(e) => setUserAnchor(e.currentTarget)}
+                      endIcon={<AccountCircle />}
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "17px",
+                        textTransform: "none",
+                        color: "#D4AF37",
+                        "& .MuiButton-endIcon svg": { fontSize: "32px" },
+                      }}
+                    >
                       hi, {user.username}
                     </Button>
+
                     <Menu
                       anchorEl={userAnchor}
                       open={Boolean(userAnchor)}
                       onClose={() => setUserAnchor(null)}
                     >
-                      {/*<MenuItem disabled>Credits: {user.sellerProfile?.credits || 0}</MenuItem>*/}
-                      {/*<Divider />*/}
                       <MenuItem
                         component={Link}
                         to="/seller"
-                        onClick={() => setUserAnchor(null)} // ✅ close menu
+                        onClick={() => setUserAnchor(null)}
                       >
                         Profile
                       </MenuItem>
                       <MenuItem
                         onClick={() => {
-                          setUserAnchor(null); // close menu
+                          setUserAnchor(null);
                           logout();
                         }}
                       >
                         Logout
                       </MenuItem>
-
                     </Menu>
                   </>
                 )}
-
               </>
             )}
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* ✅ Drawer for Mobile */}
+      {/* ✅ Mobile Drawer Menu */}
+      {/* ✅ Mobile Drawer Menu */}
       <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
         <Box sx={{ width: 250, p: 2 }}>
-          {/* ✅ Search inside Drawer */}
-          <Box sx={{ display: "flex", alignItems: "center", mb: 2, border: "1px solid #ccc", borderRadius: "4px", px: 1 }}>
-            <InputBase placeholder="Search..." sx={{ flex: 1 }} />
-            <SearchIcon />
+          {/* ✅ Search inside Drawer (Now fully functional) */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              mb: 2,
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              px: 1,
+            }}
+          >
+            <InputBase
+              placeholder="Search..."
+              sx={{ flex: 1 }}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === "Enter" && searchText.trim()) {
+                  navigate(`/shop?search=${encodeURIComponent(searchText.trim())}`);
+                  setDrawerOpen(false);
+                }
+              }}
+            />
+            <IconButton
+              onClick={() => {
+                if (searchText.trim()) {
+                  navigate(`/shop?search=${encodeURIComponent(searchText.trim())}`);
+                  setDrawerOpen(false);
+                }
+              }}
+            >
+              <SearchIcon />
+            </IconButton>
           </Box>
 
+          {/* ✅ Category Links */}
           <List>
-            <ListItemButton>Electronics</ListItemButton>
-            <ListItemButton>Fashion</ListItemButton>
-            <ListItemButton>Home & Kitchen</ListItemButton>
-            <ListItemButton>Beauty</ListItemButton>
-            <ListItemButton>Sports</ListItemButton>
-            <Divider />
+            {categories.map((cat) => (
+              <ListItemButton
+                key={cat}
+                onClick={() => {
+                  setDrawerOpen(false);
+                  navigate(`/shop?category=${encodeURIComponent(cat)}`);
+                }}
+              >
+                <ListItemText primary={cat.replace("&", " & ")} />
+              </ListItemButton>
+            ))}
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* ✅ Additional Links */}
+            <ListItemButton
+              onClick={() => {
+                setDrawerOpen(false);
+                navigate("/about-us");
+              }}
+            >
+              <ListItemText primary="About Us" />
+            </ListItemButton>
+            <ListItemButton
+              onClick={() => {
+                setDrawerOpen(false);
+                navigate("/features");
+              }}
+            >
+              <ListItemText primary="Features" />
+            </ListItemButton>
+            <ListItemButton
+              onClick={() => {
+                setDrawerOpen(false);
+                navigate("/plans");
+              }}
+            >
+              <ListItemText primary="Plans" />
+            </ListItemButton>
+            <ListItemButton
+              onClick={() => {
+                setDrawerOpen(false);
+                navigate("/contact-us");
+              }}
+            >
+              <ListItemText primary="Contact Us" />
+            </ListItemButton>
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* ✅ Authentication Section */}
             {!user ? (
-              <>
-                <ListItemButton onClick={() => navigate("/login")}>
-                 <PersonOutlineIcon alt="Login/Signup" sx={{ width: 29, height: 29, color: "black" }} />
-                  <span style={{ marginLeft: 10 }}>Login / Signup</span>
-                </ListItemButton>
-              </>
+              <ListItemButton
+                onClick={() => {
+                  setDrawerOpen(false);
+                  navigate("/login");
+                }}
+              >
+                <PersonOutlineIcon sx={{ width: 25, height: 25, mr: 1 }} />
+                <ListItemText primary="Login / Signup" />
+              </ListItemButton>
             ) : (
               <>
-                <ListItemButton onClick={() => navigate("/supplier-profile")}>
-                  Switch to Supplier
+                <ListItemButton
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate("/supplier-profile");
+                  }}
+                >
+                  <ListItemText primary="Switch to Supplier" />
                 </ListItemButton>
-                <ListItemButton onClick={() => navigate("/seller")}>Profile</ListItemButton>
-                <ListItemButton onClick={logout}>Logout</ListItemButton>
+                <ListItemButton
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    navigate("/seller");
+                  }}
+                >
+                  <ListItemText primary="Profile" />
+                </ListItemButton>
+                <ListItemButton
+                  onClick={() => {
+                    setDrawerOpen(false);
+                    logout();
+                  }}
+                >
+                  <ListItemText primary="Logout" />
+                </ListItemButton>
               </>
             )}
           </List>
         </Box>
       </Drawer>
+
     </Box>
   );
 }

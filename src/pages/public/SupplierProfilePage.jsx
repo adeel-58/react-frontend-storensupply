@@ -22,6 +22,8 @@ import {
   Rating,
   Divider,
   IconButton,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   Verified,
@@ -41,6 +43,10 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 const IMAGE_BASE_URL = "https://storensupply.com";
 
 export default function SupplierProfilePage() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+
   const { supplierId } = useParams();
   const navigate = useNavigate();
 
@@ -127,12 +133,16 @@ export default function SupplierProfilePage() {
   };
 
   const handleContactSupplier = () => {
-    if (supplier?.whatsapp_number) {
-      const message = `Hi ${supplier.store_name}, I'm interested in your products!`;
-      const url = `https://wa.me/${supplier.whatsapp_number}?text=${encodeURIComponent(message)}`;
-      window.open(url, "_blank");
-    }
-  };
+  if (supplier?.whatsapp_number) {
+    const message = `Hi ${supplier.store_name}, I'm interested in your products!`;
+    const cleanNumber = supplier.whatsapp_number.replace(/\D/g, ""); // remove +, spaces, dashes
+    const url = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  } else {
+    alert("Supplier WhatsApp number not available");
+  }
+};
+
 
   if (loading) {
     return (
@@ -157,17 +167,18 @@ export default function SupplierProfilePage() {
     <Box sx={{ bgcolor: "#ffffffff", minHeight: "100vh", py: 0, px: 0 }}>
       <Container maxWidth="100%">
 
-
+        {/* Header Section */}
         <Box width="100%">
           <Paper
             sx={{
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "flex-start",
-              px: 8,
-              pt: 8,
-              mb: 4,
-              gap: 4,
+              alignItems: isMobile ? "center" : "flex-start",
+              flexDirection: isMobile ? "column" : "row",
+              px: isMobile ? 2 : 8,
+              pt: isMobile ? 3 : 8,
+              mb: isMobile ? 3 : 4,
+              gap: isMobile ? 2 : 4,
               boxShadow: "none",
               borderRadius: 0,
               width: "100%",
@@ -179,8 +190,8 @@ export default function SupplierProfilePage() {
               src={supplier?.logo ? IMAGE_BASE_URL + supplier.logo : "/default-store.png"}
               alt={supplier?.store_name}
               sx={{
-                width: 180,
-                height: 200,
+                width: isMobile ? 120 : 180,
+                height: isMobile ? 140 : 200,
                 borderRadius: 2,
                 flexShrink: 0,
               }}
@@ -188,88 +199,111 @@ export default function SupplierProfilePage() {
             />
 
             {/* Store Info */}
-            <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                <Typography variant="h4" fontWeight="bold">
+            <Box sx={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              textAlign: isMobile ? "center" : "left",
+            }}>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1, justifyContent: isMobile ? "center" : "flex-start" }}>
+                <Typography variant="h4" fontWeight="bold" sx={{ fontSize: isMobile ? "20px" : "inherit" }}>
                   {supplier?.store_name}
                 </Typography>
               </Stack>
 
               <Typography
                 color="text.secondary"
-                sx={{ mb: 2, lineHeight: 1.6, width: "60%", fontSize: "16px", color: "black" }}
+                sx={{
+                  mb: 2,
+                  lineHeight: 1.6,
+                  width: isMobile ? "100%" : "60%",
+                  fontSize: isMobile ? "14px" : "16px",
+                  color: "black"
+                }}
               >
                 {supplier?.store_description || "Welcome to our store!"}
               </Typography>
 
-              <Stack direction="row" spacing={5} flexWrap="wrap" sx={{ mb: 3, color: "black" }}>
+              <Stack direction={isMobile ? "column" : "row"} spacing={isMobile ? 1.5 : 5} flexWrap="wrap" sx={{ mb: 3, color: "black", gap: isMobile ? 1 : 5 }}>
                 {supplier?.country && (
-                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <LocationOn fontSize="small" color="action" />
-                    <Typography variant="body2" color="#000000" fontSize={16}>
+                  <Stack direction="row" alignItems="center" spacing={0.5} sx={{ justifyContent: isMobile ? "center" : "flex-start" }}>
+                    <LocationOn fontSize={isMobile ? "small" : "small"} color="action" />
+                    <Typography variant="body2" color="#000000" fontSize={isMobile ? "14px" : "16px"}>
                       {supplier.country}
                     </Typography>
                   </Stack>
                 )}
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <CalendarToday fontSize="small" color="action" />
-                  <Typography variant="body2" fontSize={16}>
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ justifyContent: isMobile ? "center" : "flex-start" }}>
+                  <CalendarToday fontSize={isMobile ? "small" : "small"} color="action" />
+                  <Typography variant="body2" fontSize={isMobile ? "14px" : "16px"}>
                     Member since {new Date(supplier?.member_since).toLocaleDateString()}
                   </Typography>
                 </Stack>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <CategoryIcon fontSize="small" color="action" />
-                  <Typography variant="body2" fontSize={16}>
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ justifyContent: isMobile ? "center" : "flex-start" }}>
+                  <CategoryIcon fontSize={isMobile ? "small" : "small"} color="action" />
+                  <Typography variant="body2" fontSize={isMobile ? "14px" : "16px"}>
                     {supplier?.total_products} Products
                   </Typography>
                 </Stack>
               </Stack>
             </Box>
 
-            {/* ✅ Contact Button on Top Right */}
-            <Box>
+            {/* Contact Button */}
+            <Box sx={{
+              display: "flex",
+              justifyContent: isMobile ? "center" : "flex-end",
+              width: isMobile ? "100%" : "auto",
+            }}>
               <Button
                 variant="contained"
-                startIcon={<WhatsApp />}
+                startIcon={isMobile ? undefined : <WhatsApp />}
                 onClick={handleContactSupplier}
                 disabled={!supplier?.whatsapp_number}
                 sx={{
                   color: "#000",
                   fontWeight: "bold",
-                  width: 200,
-                  height: 45,
-                  mt: 1,
+                  width: isMobile ? "100%" : 200,
+                  height: isMobile ? 40 : 45,
+                  mt: isMobile ? 0 : 1,
+                  fontSize: isMobile ? "12px" : "14px",
                   "&:hover": {
                     bgcolor: "#D4AF37",
                   },
                 }}
               >
-                Contact Supplier
+                {isMobile ? "Contact" : "Contact Supplier"}
               </Button>
             </Box>
           </Paper>
         </Box>
 
-
-
-
+        {/* Filters Section */}
         <Box width="100%">
-          <Card sx={{ boxShadow: "none", borderRadius: 0, px: 6, pt: 2 }}>
-            <CardContent>
-              <Grid container spacing={5} alignItems="center">
+          <Card sx={{
+            boxShadow: "none",
+            borderRadius: 0,
+            px: isMobile ? 2 : 6,
+            pt: isMobile ? 2 : 2,
+          }}>
+            <CardContent sx={{ p: isMobile ? 1 : 2 }}>
+              <Grid container spacing={isMobile ? 1.5 : 5} alignItems="center">
                 <Grid item xs={12} md={5}>
                   <TextField
                     fullWidth
                     placeholder="Search products..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    size={isMobile ? "small" : "medium"}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <Search />
+                          <Search fontSize={isMobile ? "small" : "medium"} />
                         </InputAdornment>
                       ),
-                      sx: { height: 40, fontSize: "17px" } // reduce height + font
+                      sx: {
+                        height: isMobile ? 35 : 40,
+                        fontSize: isMobile ? "14px" : "17px"
+                      }
                     }}
                   />
                 </Grid>
@@ -282,12 +316,19 @@ export default function SupplierProfilePage() {
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     SelectProps={{ native: true }}
+                    size={isMobile ? "small" : "medium"}
                     sx={{
-                      "& .MuiInputBase-root": { height: 40, fontSize: "17px" },
-                      "& label": { fontSize: "17px", top: "-5px" }
+                      "& .MuiInputBase-root": {
+                        height: isMobile ? 35 : 40,
+                        fontSize: isMobile ? "8px" : "17px"
+                      },
+                      "& label": {
+                        fontSize: isMobile ? "12px" : "17px",
+                        top: isMobile ? "-3px" : "-5px"
+                      }
                     }}
                     inputProps={{
-                      style: { fontSize: "17px" }
+                      style: { fontSize: isMobile ? "12px" : "17px" }
                     }}
                   >
                     <option value="all">All Categories</option>
@@ -307,12 +348,19 @@ export default function SupplierProfilePage() {
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     SelectProps={{ native: true }}
+                    size={isMobile ? "small" : "medium"}
                     sx={{
-                      "& .MuiInputBase-root": { height: 40, fontSize: "17px" },
-                      "& label": { fontSize: "17px", top: "-5px" }
+                      "& .MuiInputBase-root": {
+                        height: isMobile ? 35 : 40,
+                        fontSize: isMobile ? "8px" : "17px"
+                      },
+                      "& label": {
+                        fontSize: isMobile ? "12px" : "17px",
+                        top: isMobile ? "-3px" : "-5px"
+                      }
                     }}
                     inputProps={{
-                      style: { fontSize: "17px" }
+                      style: { fontSize: isMobile ? "12px" : "17px" }
                     }}
                   >
                     <option value="recent">Most Recent</option>
@@ -323,38 +371,41 @@ export default function SupplierProfilePage() {
                 </Grid>
               </Grid>
 
-              <Typography variant="body2" color="text.secondary" mt={2}>
+              <Typography variant="body2" color="text.secondary" mt={2} sx={{ fontSize: isMobile ? "12px" : "inherit" }}>
                 Showing {filteredProducts.length} of {products.length} products
               </Typography>
             </CardContent>
           </Card>
         </Box>
 
-
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
-          <Card sx={{ p: 5, textAlign: "center", boxShadow: "none" }}>
-            <Typography variant="h6" color="text.secondary">
+          <Card sx={{ p: isMobile ? 3 : 5, textAlign: "center", boxShadow: "none" }}>
+            <Typography variant="h6" color="text.secondary" sx={{ fontSize: isMobile ? "16px" : "inherit" }}>
               No products found
             </Typography>
           </Card>
         ) : (
-          <Grid container spacing={3} sx={{ px: 7, pb: 8 }}>
+          <Grid container spacing={isMobile ? 1.5 : 3} sx={{ px: isMobile ? 2 : 7, pb: 8 }}>
             {filteredProducts.map((product) => (
               <Grid item xs={12} sm={6} md={4} key={product.id}>
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
-                  {/* ✅ Fixed Card Size */}
+                  {/* Product Card */}
                   <Card
                     sx={{
-                      width: 270,
-                      height: 400,
+                      width: isMobile ? "100%" : 270,
+                      height: isMobile ? 320 : 400,
                       display: "flex",
                       flexDirection: "column",
                       boxShadow: "none",
                       border: "1px solid #e0e0e0",
                       cursor: "pointer",
                       overflow: "hidden",
-                      position: "relative", // needed for absolute sticker
+                      position: "relative",
+                      transition: "transform 0.2s",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                      },
                     }}
                     onClick={() => navigate(`/supplier/${supplierId}/product/${product.id}`)}
                   >
@@ -366,11 +417,12 @@ export default function SupplierProfilePage() {
                         right: 0,
                         backgroundColor: "#1e1e1e",
                         color: "white",
-                        padding: "6px 20px",
-                        borderTopLeftRadius: "15px",
-                        borderBottomLeftRadius: "15px",
-                        fontSize: "15px",
+                        padding: isMobile ? "4px 12px" : "6px 20px",
+                        borderTopLeftRadius: isMobile ? "10px" : "15px",
+                        borderBottomLeftRadius: isMobile ? "10px" : "15px",
+                        fontSize: isMobile ? "12px" : "15px",
                         fontWeight: "bold",
+                        zIndex: 1,
                       }}
                     >
                       Stock: {product.stock_quantity}
@@ -378,7 +430,7 @@ export default function SupplierProfilePage() {
 
                     <CardMedia
                       component="img"
-                      height="250"
+                      height={isMobile ? 180 : 250}
                       image={product.main_image ? IMAGE_BASE_URL + product.main_image : "/placeholder-product.png"}
                       alt={product.title}
                       sx={{
@@ -388,18 +440,23 @@ export default function SupplierProfilePage() {
                       }}
                     />
 
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      {/* ✅ Title: font 17px + 2 lines max */}
+                    <CardContent sx={{
+                      flexGrow: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      p: isMobile ? 1 : 2,
+                    }}>
+                      {/* Title */}
                       <Typography
                         sx={{
-                          fontSize: "17px",
+                          fontSize: isMobile ? "14px" : "17px",
                           fontWeight: "bold",
                           display: "-webkit-box",
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: "vertical",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
-                          minHeight: "48px",
+                          minHeight: isMobile ? "36px" : "48px",
                         }}
                         gutterBottom
                         title={product.title}
@@ -407,28 +464,31 @@ export default function SupplierProfilePage() {
                         {product.title}
                       </Typography>
 
-                      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                        <Typography variant="h5" color="primary" fontWeight="bold">
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        mt="auto"
+                      >
+                        <Typography variant="h5" color="primary" fontWeight="bold" sx={{ fontSize: isMobile ? "16px" : "inherit" }}>
                           ${Number(product.supplier_sold_price || 0).toFixed(2)}
                         </Typography>
                         {product.category && (
-                          <Chip label={product.category} size="small" color="default" />
+                          <Chip
+                            label={product.category}
+                            size={isMobile ? "small" : "small"}
+                            color="default"
+                            sx={{ fontSize: isMobile ? "11px" : "inherit" }}
+                          />
                         )}
                       </Stack>
-
-                      {/* Removed stock from here since it's now displayed as sticker */}
                     </CardContent>
-
-                    
                   </Card>
-
                 </Box>
               </Grid>
             ))}
           </Grid>
         )}
-
-
 
       </Container>
     </Box>

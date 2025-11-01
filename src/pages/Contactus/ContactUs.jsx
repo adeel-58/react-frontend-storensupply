@@ -1,6 +1,6 @@
 // ContactUs.jsx
 import React, { useState } from "react";
-import { Box, Grid, Typography, TextField, Button } from "@mui/material";
+import { Box, Grid, Typography, TextField, Button, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";
 
 const labelStyle = { fontSize: "17px", fontWeight: 500, mb: 0.5 };
@@ -21,6 +21,9 @@ const inputStyle = {
 const WEB3_ACCESS_KEY = "8d86369e-1a6f-4a92-aa25-33f778745ca4"; // 🔑 Replace with your actual Web3Forms Access Key
 
 const ContactUs = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -82,21 +85,38 @@ const ContactUs = () => {
         flexGrow: 1,
         backgroundColor: "white",
         minHeight: "100vh",
-        pt: 15,
-        pb: 15,
+        pt: isMobile ? 8 : 15,
+        pb: isMobile ? 8 : 15,
+        px: isMobile ? 2 : 0,
       }}
     >
-      <Grid container spacing={4} alignItems="center">
-        {/* LEFT SIDE */}
+      <Grid
+        container
+        spacing={isMobile ? 2 : 4}
+        alignItems="center"
+        sx={{
+          flexDirection: isMobile ? "column" : "row",
+        }}
+      >
+        {/* LEFT SIDE - Image */}
         <Grid
           item
           xs={12}
           md={5}
-          sx={{ textAlign: "center", width: "50%", pt: 0, mt: -6 }}
+          sx={{
+            textAlign: "center",
+            width: isMobile ? "100%" : "50%",
+            pt: 0,
+            mt: isMobile ? 0 : -6,
+          }}
         >
           <Typography
             variant="h3"
-            sx={{ fontWeight: "bold", mb: 8, fontSize: "35px" }}
+            sx={{
+              fontWeight: "bold",
+              mb: isMobile ? 4 : 8,
+              fontSize: isMobile ? "24px" : "35px",
+            }}
           >
             Contact Us
           </Typography>
@@ -104,7 +124,11 @@ const ContactUs = () => {
             component="img"
             src="/contact.png"
             alt="Contact"
-            sx={{ width: "100%", maxWidth: 220 }}
+            sx={{
+              width: "100%",
+              maxWidth: isMobile ? 150 : 220,
+              height: "auto",
+            }}
           />
         </Grid>
 
@@ -116,29 +140,48 @@ const ContactUs = () => {
             sx={{
               display: "flex",
               flexDirection: "column",
-              gap: 3,
+              gap: isMobile ? 2 : 3,
               width: "100%",
+              px: isMobile ? 0 : 4,
             }}
           >
             {/* Full Name */}
             <Box>
-              <Typography sx={labelStyle}>Full Name</Typography>
+              <Typography sx={{
+                ...labelStyle,
+                fontSize: isMobile ? "14px" : "17px",
+              }}>
+                Full Name
+              </Typography>
               <TextField
                 fullWidth
                 variant="outlined"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                sx={{ width: "500px", ...inputStyle }}
+                size={isMobile ? "small" : "medium"}
+                sx={{
+                  width: isMobile ? "100%" : "500px",
+                  ...inputStyle,
+                }}
                 error={!!errors.name}
                 helperText={errors.name}
               />
             </Box>
 
             {/* Email + Phone */}
-            <Box sx={{ display: "flex", gap: 4 }}>
+            <Box sx={{
+              display: "flex",
+              gap: isMobile ? 2 : 4,
+              flexDirection: isMobile ? "column" : "row",
+            }}>
               <Box sx={{ width: "100%" }}>
-                <Typography sx={labelStyle}>Email</Typography>
+                <Typography sx={{
+                  ...labelStyle,
+                  fontSize: isMobile ? "14px" : "17px",
+                }}>
+                  Email
+                </Typography>
                 <TextField
                   fullWidth
                   type="email"
@@ -146,21 +189,34 @@ const ContactUs = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  sx={{ width: "220px", ...inputStyle }}
+                  size={isMobile ? "small" : "medium"}
+                  sx={{
+                    width: isMobile ? "100%" : "220px",
+                    ...inputStyle,
+                  }}
                   error={!!errors.email}
                   helperText={errors.email}
                 />
               </Box>
 
               <Box sx={{ width: "100%" }}>
-                <Typography sx={labelStyle}>Phone</Typography>
+                <Typography sx={{
+                  ...labelStyle,
+                  fontSize: isMobile ? "14px" : "17px",
+                }}>
+                  Phone
+                </Typography>
                 <TextField
                   fullWidth
                   variant="outlined"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  sx={{ width: "250px", ...inputStyle }}
+                  size={isMobile ? "small" : "medium"}
+                  sx={{
+                    width: isMobile ? "100%" : "250px",
+                    ...inputStyle,
+                  }}
                   error={!!errors.phone}
                   helperText={errors.phone}
                 />
@@ -169,16 +225,25 @@ const ContactUs = () => {
 
             {/* Message */}
             <Box>
-              <Typography sx={labelStyle}>Message</Typography>
+              <Typography sx={{
+                ...labelStyle,
+                fontSize: isMobile ? "14px" : "17px",
+              }}>
+                Message
+              </Typography>
               <TextField
                 fullWidth
                 multiline
-                rows={5}
+                rows={isMobile ? 4 : 5}
                 variant="outlined"
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
-                sx={{ width: "500px", ...inputStyle }}
+                size={isMobile ? "small" : "medium"}
+                sx={{
+                  width: isMobile ? "100%" : "500px",
+                  ...inputStyle,
+                }}
                 error={!!errors.message}
                 helperText={errors.message}
               />
@@ -190,14 +255,15 @@ const ContactUs = () => {
               variant="contained"
               disabled={isSubmitting}
               sx={{
-                width: "fit-content",
-                alignSelf: "flex-end",
-                mt: 2,
-                fontSize: "17px",
+                width: isMobile ? "100%" : "fit-content",
+                alignSelf: isMobile ? "stretch" : "flex-end",
+                mt: isMobile ? 1 : 2,
+                fontSize: isMobile ? "14px" : "17px",
                 fontWeight: 500,
                 color: "white",
                 backgroundColor: "#000",
-                px: 4,
+                px: isMobile ? 2 : 4,
+                py: isMobile ? 1.2 : 1,
                 "&:hover": { backgroundColor: "#1a1a1a" },
               }}
             >
