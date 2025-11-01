@@ -55,7 +55,7 @@ const ShopPage = () => {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get("http://localhost:3000/api/shop");
+            const { data } = await axios.get("https://vercel-node-backend-drab.vercel.app/api/shop");
             if (data.success && Array.isArray(data.products)) {
                 setProducts(data.products);
                 setFilteredProducts(data.products);

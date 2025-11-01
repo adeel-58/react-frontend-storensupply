@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Typography, Button, Card, CardContent, CardMedia } from "@mui/material";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import heroImage from "/heroimage.jpg";
+import heroImage from "/heroimage.webp";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
@@ -13,7 +13,7 @@ export default function Home() {
       title1: "Your Supplier Dashboard,",
       title2: "Smartly Simplified.",
       subtitle: "Upload products, set prices, and track inventory in one place.",
-      link1: "/feautres",
+      link1: "/features",
       btnText1: "View Features",
     },
     {

@@ -38,7 +38,7 @@ import {
 import { motion } from "framer-motion";
 
 const IMAGE_BASE_URL = "https://storensupply.com";
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "https://vercel-node-backend-drab.vercel.app";
 
 export default function ProductDetailPage() {
   const theme = useTheme();

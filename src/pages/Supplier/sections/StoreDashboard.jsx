@@ -47,7 +47,7 @@ import {
 import axios from "axios";
 import { FormControl, Select, MenuItem } from "@mui/material";
 import { Link } from "react-router-dom";
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "https://vercel-node-backend-drab.vercel.app";
 const COLORS = ["#00C49F", "#FF8042", "#1976d2", "#6d4c41", "#2e7d32"];
 
 /**

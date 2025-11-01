@@ -39,7 +39,7 @@ import {
 } from "@mui/icons-material";
 
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "https://vercel-node-backend-drab.vercel.app";
 const IMAGE_BASE_URL = "https://storensupply.com";
 
 export default function SupplierProfilePage() {

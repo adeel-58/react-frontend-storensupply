@@ -54,7 +54,7 @@ export default function SupplierDashboard() {
     return dbPath;
   };
 
-  const getPublicLink = () => (supplier?.id ? `https://storensupply/supplier/${supplier.id}` : null);
+  const getPublicLink = () => (supplier?.id ? `https://storensupply.com/supplier/${supplier.id}` : null);
 
   const handleCopyLink = async () => {
     const link = getPublicLink();

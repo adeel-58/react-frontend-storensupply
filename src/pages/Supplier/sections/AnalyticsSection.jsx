@@ -37,7 +37,7 @@ import {
 import "chart.js/auto";
 import { Line, Bar, Pie } from "react-chartjs-2";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_API_URL || "https://storensupply.com";
 
 export default function AnalyticsDashboard() {
   // Loading states
